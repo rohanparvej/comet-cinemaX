@@ -1,0 +1,151 @@
+/* ==========================================================
+   HERO: full-screen intro with the theater background.
+   Swap the weekly/monthly visual by replacing the image file
+   referenced in index.html (.hero__bg).
+   ========================================================== */
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh; /* mobile browsers: ignore the collapsing address bar */
+  padding: calc(var(--navbar-height) + var(--space-3)) var(--space-3) 6rem;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+}
+
+/* Background image */
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%; /* keeps the screen in view on tall phones */
+}
+
+/* Dark overlay so the text always stays readable */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, rgba(14, 13, 11, 0.35) 0%, rgba(14, 13, 11, 0.85) 100%),
+    linear-gradient(to bottom, rgba(14, 13, 11, 0.6) 0%, transparent 30%, var(--color-bg) 100%);
+}
+
+.hero__content {
+  max-width: 1100px;
+  animation: fade-up 1.1s var(--ease) both;
+}
+
+.hero__title {
+  max-width: 9em;          /* em = relative to the title size, so it scales */
+  margin: 0 auto;
+  text-wrap: balance;      /* even line lengths */
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(2.75rem, 11vw, 7.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+/* Highlighted word */
+.hero__title em {
+  font-style: italic;
+  font-weight: 500;
+  background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Tagline: italic serif with a thin line on each side */
+.hero__subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.1rem, 3.2vw, 1.75rem);
+  letter-spacing: 0.01em;
+  color: var(--color-text);
+  animation: fade-up 1.1s var(--ease) 0.25s both;
+}
+
+.hero__subtitle::before,
+.hero__subtitle::after {
+  content: "";
+  flex: 0 0 clamp(1.5rem, 6vw, 3.5rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary));
+}
+
+.hero__subtitle::after {
+  transform: scaleX(-1);
+}
+
+/* "Explore more" cue with a floating arrow */
+.hero__scroll {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  transition: color var(--speed-fast) var(--ease);
+  animation: fade-up 1.1s var(--ease) 0.7s both;
+}
+
+.hero__scroll:hover {
+  color: var(--color-primary);
+}
+
+.hero__scroll-arrow {
+  display: block;
+  width: 28px;
+  height: 28px;
+  animation: float 1.8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(10px); }
+}
+
+/* Phones: cue goes bottom-left so the Now Playing cutout (right side) can overlap freely */
+@media (max-width: 899px) {
+  .hero__scroll {
+    left: var(--space-3);
+    right: auto;
+    margin: 0;
+    align-items: flex-start;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

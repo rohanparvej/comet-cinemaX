@@ -1,0 +1,69 @@
+/* Clapperboard menu icon: 3 lines, the top one is tilted like the clapper arm. */
+
+.menu-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 40px;
+  height: 40px;
+}
+
+.menu-btn__line {
+  display: block;
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--color-text);
+  transition:
+    transform var(--speed) var(--ease),
+    width var(--speed) var(--ease),
+    background var(--speed-fast) var(--ease);
+}
+
+/* Top line: the clapper arm, hinged on the left */
+.menu-btn__line--clap {
+  background: var(--color-primary);
+  transform-origin: left center;
+  transform: rotate(-12deg);
+}
+
+/* Hover: the clapper "claps" shut, then settles back */
+.menu-btn:hover .menu-btn__line--clap {
+  animation: clap 0.5s var(--ease);
+}
+
+/* Last line is shorter for a calm, minimal look; it grows on hover */
+.menu-btn__line:last-child {
+  width: 65%;
+  margin-left: auto;
+}
+
+.menu-btn:hover .menu-btn__line:last-child {
+  width: 100%;
+}
+
+@keyframes clap {
+  0%   { transform: rotate(-12deg); }
+  45%  { transform: rotate(0deg); }
+  70%  { transform: rotate(-6deg); }
+  100% { transform: rotate(-12deg); }
+}
+
+/* Open state: becomes a close (X) */
+.menu-btn[aria-expanded="true"] .menu-btn__line--clap {
+  animation: none;
+  background: var(--color-secondary);
+  transform: translateY(9px) rotate(45deg);
+}
+
+.menu-btn[aria-expanded="true"] .menu-btn__line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.menu-btn[aria-expanded="true"] .menu-btn__line:last-child {
+  width: 100%;
+  transform: translateY(-9px) rotate(-45deg);
+}

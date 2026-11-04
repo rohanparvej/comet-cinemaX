@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img">
+  <!--
+    PLACEHOLDER hero image: theater screen + seats.
+    Replace this file (keep the same name) or point the <img> in index.html
+    to a new image. Recommended: 1600x900 or larger, screen in the upper middle.
+  -->
+  <defs>
+    <linearGradient id="room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14110b"/>
+      <stop offset="1" stop-color="#0a0907"/>
+    </linearGradient>
+
+    <radialGradient id="screenGlow" cx="50%" cy="50%" r="60%">
+      <stop offset="0" stop-color="#ffd166"/>
+      <stop offset="0.55" stop-color="#fb8500"/>
+      <stop offset="1" stop-color="#7a3a00"/>
+    </radialGradient>
+
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb703" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffb703" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="seatFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2012"/>
+      <stop offset="1" stop-color="#120e08"/>
+    </linearGradient>
+
+    <!-- one seat -->
+    <g id="seat">
+      <rect x="-36" y="-74" width="72" height="66" rx="20" fill="url(#seatFill)" stroke="#fb8500" stroke-opacity="0.35" stroke-width="2"/>
+      <rect x="-42" y="-16" width="84" height="24" rx="9" fill="#0f0c07"/>
+    </g>
+
+    <!-- one row of 15 seats, centered on x = 0 -->
+    <g id="row">
+      <use href="#seat" x="-700"/><use href="#seat" x="-600"/><use href="#seat" x="-500"/>
+      <use href="#seat" x="-400"/><use href="#seat" x="-300"/><use href="#seat" x="-200"/>
+      <use href="#seat" x="-100"/><use href="#seat" x="0"/><use href="#seat" x="100"/>
+      <use href="#seat" x="200"/><use href="#seat" x="300"/><use href="#seat" x="400"/>
+      <use href="#seat" x="500"/><use href="#seat" x="600"/><use href="#seat" x="700"/>
+    </g>
+  </defs>
+
+  <!-- room -->
+  <rect width="1600" height="900" fill="url(#room)"/>
+
+  <!-- light beam from the screen -->
+  <polygon points="380,430 1220,430 1600,900 0,900" fill="url(#beam)"/>
+
+  <!-- the screen (swap this area with the movie visual) -->
+  <rect x="360" y="70" width="880" height="380" rx="10" fill="#1a1308"/>
+  <rect x="380" y="90" width="840" height="340" rx="6" fill="url(#screenGlow)"/>
+
+  <!-- seat rows, far to near -->
+  <g transform="translate(800 560) scale(0.45)"><use href="#row"/></g>
+  <g transform="translate(800 645) scale(0.6)"><use href="#row"/></g>
+  <g transform="translate(800 750) scale(0.8)"><use href="#row"/></g>
+  <g transform="translate(800 895) scale(1.05)"><use href="#row"/></g>
+</svg>

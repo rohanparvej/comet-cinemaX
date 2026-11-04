@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinemax - Screening Polls & Reviews</title>
+
+  <!-- Fraunces from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="navbar__inner">
+
+      <!-- LEFT: logo -->
+      <a href="#" class="logo" aria-label="Home">
+        <svg class="logo__svg" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" role="img">
+          <rect x="0" y="4" width="32" height="32" rx="8" fill="currentColor"/>
+          <rect x="44" y="12" width="76" height="6" rx="3" fill="currentColor" opacity="0.9"/>
+          <rect x="44" y="24" width="52" height="6" rx="3" fill="currentColor" opacity="0.5"/>
+        </svg>
+      </a>
+
+      <!-- RIGHT: menu button (clapperboard style) -->
+      <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="menu">
+        <span class="menu-btn__line menu-btn__line--clap"></span>
+        <span class="menu-btn__line"></span>
+        <span class="menu-btn__line"></span>
+      </button>
+
+    </div>
+
+    <nav class="menu" id="menu" aria-hidden="true">
+      <ul class="menu__list">
+        <li><a class="menu__link" href="#home">Home</a></li>
+        <li><a class="menu__link" href="#now-playing">Now Playing</a></li>
+        <li><a class="menu__link" href="#polls-reviews">Polls &amp; Reviews</a></li>
+        <li><a class="menu__link" href="admin.html">Admin</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="home">
+      <img class="hero__bg" src="assets/images/theatre-poster.png" alt="">
+
+      <div class="hero__content">
+        <h1 class="hero__title">For the love of <em>cinema.</em></h1>
+        <p class="hero__subtitle">Stories worth sitting in the dark for.</p>
+      </div>
+
+      <!-- Scroll cue -->
+      <a class="hero__scroll" href="#now-playing">
+        <span>Explore more</span>
+        <svg class="hero__scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 4v16M5 13l7 7 7-7"/>
+        </svg>
+      </a>
+    </section>
+
+    <!-- NOW PLAYING -->
+    <section class="now-playing" id="now-playing">
+      <div class="featured" id="featured"></div>
+      <div class="lineup" id="lineup"></div>
+    </section>
+
+    <!-- POLLS & REVIEWS (built by js/components/polls-reviews.js from the backend data) -->
+    <section class="polls-reviews" id="polls-reviews"></section>
+  </main>
+
+  <!-- Scripts in correct order: settings, services, components, then main -->
+  <script src="js/config.js" defer></script>
+  <script src="js/services/api.js" defer></script>
+  <script src="js/services/session.js" defer></script>
+  <script src="js/components/dom-helpers.js" defer></script>
+  <script src="js/components/navbar.js" defer></script>
+  <script src="js/components/now-playing.js" defer></script>
+  <script src="js/components/star-rating.js" defer></script>
+  <script src="js/components/auth-modal.js" defer></script>
+  <script src="js/components/polls-reviews.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>

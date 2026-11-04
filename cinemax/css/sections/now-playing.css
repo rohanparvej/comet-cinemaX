@@ -1,0 +1,313 @@
+/* ==========================================================
+   NOW PLAYING: featured movie + parallax poster lineup.
+   Content comes from js/components/now-playing-data.js
+   ========================================================== */
+
+.now-playing {
+  position: relative;
+  background: var(--color-bg);
+}
+
+/* ---------- Featured movie ---------- */
+
+.featured {
+  /* Cutout size, and how far it reaches up over the hero */
+  --cutout-overlap: clamp(80px, 18svh, 200px);
+  --cutout-height: clamp(300px, 52svh, 520px);
+
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: calc(var(--navbar-height) + var(--space-4)) var(--space-3) var(--space-4);
+  overflow-x: clip; /* sideways clipped, but the cutout may rise above the top */
+  isolation: isolate;
+}
+
+@media (min-width: 900px) {
+  .featured {
+    --cutout-height: clamp(420px, 80svh, 840px);
+  }
+}
+
+.featured__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Shown when the movie has no image yet */
+.featured__bg--empty {
+  background:
+    radial-gradient(ellipse at 75% 25%, var(--color-secondary) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, #5a2a00 0%, transparent 60%),
+    var(--color-surface);
+  opacity: 0.85;
+}
+
+/* Fade into the page colour so the section blends with its neighbours */
+.featured::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, var(--color-bg) 4%, rgba(14, 13, 11, 0.35) 55%, rgba(14, 13, 11, 0.7) 100%),
+    linear-gradient(to right, rgba(14, 13, 11, 0.7), transparent 70%);
+}
+
+.featured__inner {
+  position: relative;
+  z-index: 2; /* text stays above the cutout */
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+
+/* Character cutout: starts above this section (over the hero) for a 3D pop-out */
+.featured__cutout {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--cutout-overlap) * -1);
+  right: 3vw;
+  height: var(--cutout-height);
+  width: auto;
+  max-width: none;
+  pointer-events: none;
+  transform: translateY(calc(var(--shift, 0) * -40px));
+  filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.65));
+  /* feet fade into the page so there is no hard edge */
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+}
+
+/* Phones: push it toward the right edge to keep the left side free */
+@media (max-width: 899px) {
+  .featured__cutout {
+    right: -4vw;
+  }
+}
+
+.featured__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+/* Small pulsing "live" dot */
+.featured__label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 133, 0, 0.6); }
+  50%      { box-shadow: 0 0 0 8px rgba(251, 133, 0, 0); }
+}
+
+.featured__title {
+  max-width: 14em;
+  margin: var(--space-2) 0;
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(2rem, 6vw, 4.25rem);
+  overflow-wrap: break-word; /* very long single words never overflow */
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.featured__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.featured__meta li + li::before {
+  content: "·";
+  margin-right: 0.75rem;
+  color: var(--color-primary);
+}
+
+.featured__text {
+  max-width: 48ch;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+/* ---------- Poster lineup (parallax) ---------- */
+
+/* JS sets the exact height. This is only a fallback. */
+.lineup {
+  position: relative;
+  height: 300vh;
+}
+
+/* Stays pinned to the screen while you scroll through .lineup */
+.lineup__stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+  height: 100vh;
+  height: 100svh;
+  padding-top: var(--navbar-height); /* keep content clear of the fixed navbar */
+  overflow: hidden;
+}
+
+.lineup__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--space-3);
+}
+
+.lineup__title {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  letter-spacing: -0.01em;
+}
+
+.lineup__track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: max-content;
+  padding: 0 12vw;
+  will-change: transform;
+}
+
+/* One poster box. JS sets --offset (-1..1) and --focus (0..1). */
+.poster {
+  --offset: 0;
+  --focus: 1;
+  --dir: 1;
+  flex: 0 0 auto;
+  width: clamp(200px, 26vw, 340px);
+  margin-bottom: 70px;
+  transform:
+    translateY(calc(var(--offset) * var(--dir) * -70px))
+    rotate(calc(var(--offset) * var(--dir) * 5deg))
+    scale(calc(0.86 + var(--focus) * 0.14));
+  opacity: calc(0.4 + var(--focus) * 0.6);
+}
+
+/* Every second poster sits lower and drifts the other way */
+.poster:nth-child(even) {
+  --dir: -1;
+  margin-top: 70px;
+  margin-bottom: 0;
+}
+
+.poster__frame {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+/* The picture is wider than its frame and slides inside it */
+.poster__img,
+.poster__empty {
+  position: absolute;
+  top: 0;
+  left: -15%;
+  width: 130%;
+  height: 100%;
+  transform: translateX(calc(var(--offset) * -11%));
+}
+
+.poster__img {
+  object-fit: cover;
+}
+
+/* Coloured placeholder when a poster file is not set */
+.poster__empty {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-3) 15% var(--space-3);
+  background: linear-gradient(160deg, var(--tone-a), var(--tone-b));
+}
+
+.poster__empty-title {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.1;
+  text-align: center;
+  color: #140f06;
+}
+
+.poster:nth-child(5n + 1) { --tone-a: #ffb703; --tone-b: #8a4200; }
+.poster:nth-child(5n + 2) { --tone-a: #fb8500; --tone-b: #4a1d00; }
+.poster:nth-child(5n + 3) { --tone-a: #ffd166; --tone-b: #b25400; }
+.poster:nth-child(5n + 4) { --tone-a: #e85d04; --tone-b: #3a1500; }
+.poster:nth-child(5n + 5) { --tone-a: #f9c74f; --tone-b: #6b2f00; }
+
+.poster__title {
+  margin-top: var(--space-2);
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.15rem;
+}
+
+.poster__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Reduced motion: no pinning. The posters become a normal swipeable row. */
+@media (prefers-reduced-motion: reduce) {
+  .lineup {
+    height: auto !important;
+  }
+
+  .lineup__stage {
+    position: static;
+    height: auto;
+    padding: var(--space-4) 0;
+  }
+
+  .lineup__track {
+    width: auto;
+    overflow-x: auto;
+    transform: none !important;
+  }
+
+  .poster {
+    transform: none;
+    opacity: 1;
+    margin: 0;
+  }
+
+  .poster__img,
+  .poster__empty {
+    transform: none;
+  }
+}

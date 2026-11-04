@@ -1,0 +1,435 @@
+/* ==========================================================
+   ADMIN PAGE (admin.html). Same tokens and base styles as the site.
+   ========================================================== */
+
+@import "./base/tokens.css";
+@import "./base/global.css";
+@import "./components/password-field.css";
+
+.admin {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.admin__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin__brand {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+}
+
+.admin__bar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.admin__user {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Buttons ---------- */
+
+.admin-btn {
+  display: inline-block;
+  padding: 0.6rem 1.3rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease),
+    border-color var(--speed-fast) var(--ease);
+}
+
+.admin-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn--primary {
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+  color: var(--color-bg);
+  font-weight: 500;
+}
+
+.admin-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+  filter: brightness(1.12);
+}
+
+.admin-btn--ghost {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.admin-btn--danger {
+  border-color: #c0392b;
+  color: #ff8a7a;
+}
+
+.admin-btn--danger:hover:not(:disabled) {
+  background: #c0392b;
+  color: #fff;
+}
+
+.admin-btn--small {
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+/* ---------- Tabs ---------- */
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-tab {
+  margin-bottom: -1px;
+  padding: 0.6rem 1.1rem;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  transition: color var(--speed-fast) var(--ease), border-color var(--speed-fast) var(--ease);
+}
+
+.admin-tab:hover {
+  color: var(--color-text);
+}
+
+.admin-tab.is-active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ---------- Cards and text ---------- */
+
+/* display:flex below would otherwise beat the hidden attribute (inactive tabs) */
+.admin-card[hidden] {
+  display: none;
+}
+
+.admin-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.admin-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* more air between the add form and the table below it */
+.admin-form + .admin-card__head {
+  margin-top: var(--space-2);
+}
+
+.admin-card__title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.4rem;
+}
+
+.admin-card__title--spaced {
+  margin-top: var(--space-2);
+}
+
+.admin-muted {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.admin-status {
+  min-height: 1.4em;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+
+.admin-status--error {
+  color: var(--color-secondary);
+}
+
+.admin-tag {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.admin-tag--current {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ---------- Forms ---------- */
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-field--wide {
+  grid-column: 1 / -1;
+}
+
+.admin-field__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.admin-input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  color-scheme: dark;
+}
+
+.admin-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.admin-check input {
+  accent-color: var(--color-primary);
+}
+
+/* ---------- Table ---------- */
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.7rem 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.admin-table__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.admin-table tr.is-removed td {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.admin-table tr.is-removed td:last-child {
+  text-decoration: none;
+}
+
+.admin-table__voters[hidden] {
+  display: none;
+}
+
+.admin-voters {
+  padding: 0.25rem 0.25rem 0.75rem;
+}
+
+.admin-voters__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.admin-voters__item {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+}
+
+/* ---------- Winners ---------- */
+
+.admin-winners {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.admin-winner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.admin-winner.is-current {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+.admin-winner__info {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Login ---------- */
+
+.admin-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-3);
+}
+
+.admin-login__card {
+  width: min(100%, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+/* ---------- Users list ---------- */
+
+.admin-users {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-1);
+}
+
+.admin-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+/* ---------- Images tab ---------- */
+
+.admin-image {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 640px;
+}
+
+.admin-image__title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.2rem;
+}
+
+.admin-image__preview {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.admin-image__img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+.admin-image__img[hidden],
+.admin-image__empty[hidden] {
+  display: none;
+}
+
+.admin-image__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-image__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

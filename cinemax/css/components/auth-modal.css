@@ -1,0 +1,41 @@
+/* ==========================================================
+   AUTH MODAL: log in pop-up (js/components/auth-modal.js)
+   Form fields reuse the .review-form__* styles.
+   ========================================================== */
+
+.auth-modal {
+  width: min(92vw, 420px);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.auth-modal::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.auth-modal__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.auth-modal__title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+.auth-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth-modal__actions {
+  display: flex;
+  gap: var(--space-1);
+}

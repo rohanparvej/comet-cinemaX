@@ -1,0 +1,493 @@
+/* ==========================================================
+   POLLS & REVIEWS: vote on screenings, read and write reviews.
+   Content comes from the backend (js/components/polls-reviews.js)
+   Stars are in css/components/star-rating.css
+   ========================================================== */
+
+.polls-reviews {
+  position: relative;
+  padding: var(--space-4) var(--space-3) calc(var(--space-4) * 2);
+  background: var(--color-bg);
+  scroll-margin-top: var(--navbar-height); /* menu link stops below the fixed navbar */
+  overflow-x: clip;
+  isolation: isolate;
+}
+
+/* Soft glow in the corner, same warm light as the featured movie */
+.polls-reviews::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -20%;
+  z-index: -1;
+  width: 70%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, rgba(251, 133, 0, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.polls-reviews__inner {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-4) * 1.5);
+  max-width: var(--container-width);
+  margin: 0 auto;
+}
+
+/* ---------- Header ---------- */
+
+.polls-reviews__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* "pulse" animation is defined in now-playing.css */
+.polls-reviews__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.polls-reviews__label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.polls-reviews__title {
+  margin: var(--space-2) 0;
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(2.25rem, 7vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.polls-reviews__lead {
+  max-width: 44ch;
+  color: var(--color-text-muted);
+}
+
+.polls-reviews__auth {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.polls-reviews__user {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.polls-reviews__subtitle {
+  margin-bottom: var(--space-3);
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Buttons ---------- */
+
+.polls-reviews__button {
+  display: inline-block;
+  padding: 0.8rem 1.75rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
+}
+
+.polls-reviews__button:hover:not(:disabled) {
+  /* No lift/move on hover: a button that moves away from the pointer makes it flicker */
+  background-color: var(--color-primary);
+  color: var(--color-bg);
+  box-shadow: 0 7px 20px rgba(255, 183, 3, 0.2);
+}
+
+.polls-reviews__button:active:not(:disabled) {
+  box-shadow: 0 3px 10px rgba(255, 183, 3, 0.14);
+}
+
+.polls-reviews__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.polls-reviews__button--primary {
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+  color: var(--color-bg);
+  font-weight: 500;
+}
+
+.polls-reviews__button--primary:hover:not(:disabled) {
+  /* keep the gradient (a gradient cannot animate to a flat colour, which looked like a flash) */
+  background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
+  filter: brightness(1.12);
+  color: var(--color-bg);
+  box-shadow: 0 8px 24px rgba(251, 133, 0, 0.25);
+}
+
+.polls-reviews__button--ghost {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.polls-reviews__button--ghost:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: rgba(255, 183, 3, 0.07);
+  color: var(--color-primary);
+  box-shadow: 0 6px 18px rgba(255, 183, 3, 0.1);
+}
+
+.polls-reviews__button--small {
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* ---------- Polls ---------- */
+
+.polls__grid {
+  display: grid;
+  /* 2 per row on desktop (4 movies = a neat 2 x 2), 1 per row on phones */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-2);
+}
+
+.poll {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  transition: border-color var(--speed-fast) var(--ease);
+}
+
+.poll:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+/* Small poster. Same warm colours as the Now Playing placeholders */
+.poll__thumb {
+  position: relative;
+  flex: 0 0 84px;
+  align-self: flex-start;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 3px;
+  background: linear-gradient(160deg, var(--tone-a), var(--tone-b));
+}
+
+.poll:nth-child(4n + 1) { --tone-a: #ffb703; --tone-b: #8a4200; }
+.poll:nth-child(4n + 2) { --tone-a: #fb8500; --tone-b: #4a1d00; }
+.poll:nth-child(4n + 3) { --tone-a: #ffd166; --tone-b: #b25400; }
+.poll:nth-child(4n + 4) { --tone-a: #e85d04; --tone-b: #3a1500; }
+
+.poll__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.poll__thumb-letter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 2.25rem;
+  color: rgba(20, 15, 6, 0.8);
+}
+
+.poll__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.poll__title,
+.review__movie {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.poll__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.poll__stats {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  white-space: pre; /* keeps the spaces around the dot */
+}
+
+.poll__vote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem var(--space-2);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.poll__vote-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Reviews ---------- */
+
+.reviews__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 900px) {
+  .reviews__layout {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+
+  /* The form / sign in card follows you while you read the reviews */
+  .reviews__side {
+    position: sticky;
+    top: calc(var(--navbar-height) + var(--space-2));
+  }
+}
+
+.reviews__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.review {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+
+.review__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-2);
+}
+
+.review .star-rating {
+  font-size: 1.05rem;
+}
+
+.review__text {
+  margin-top: var(--space-2);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.review__text::before { content: "\201C"; color: var(--color-primary); }
+.review__text::after  { content: "\201D"; color: var(--color-primary); }
+
+.review__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Review form + sign in card ---------- */
+
+.review-form,
+.review-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+
+.review-prompt {
+  align-items: flex-start;
+  border-style: dashed;
+}
+
+.review-prompt__text {
+  color: var(--color-text-muted);
+}
+
+.review-form__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.4rem;
+}
+
+.review-form__field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.review-form__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.review-form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  color-scheme: dark;
+  transition: border-color var(--speed-fast) var(--ease);
+}
+
+.review-form__input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.review-form__input--text {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.review-form__message {
+  min-height: 1.4em;
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+}
+
+.review-form .polls-reviews__button {
+  align-self: flex-start;
+}
+/* ---------- Single-choice screening poll ---------- */
+
+.poll__choice {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: fit-content;
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease), background var(--speed-fast) var(--ease);
+}
+
+.poll__choice:hover,
+.poll__choice.is-selected {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.poll__choice.is-selected {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.poll__choice-input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.poll__submit {
+  margin-top: var(--space-2);
+}
+
+.poll__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* ---------- Voting states and messages ---------- */
+
+.poll__choice.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.poll__choice.is-disabled:hover {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.poll__badge {
+  width: fit-content;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 0.82rem;
+}
+
+.poll__message {
+  margin-top: var(--space-2);
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+}
+
+.polls-reviews__hint {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.polls-reviews__empty {
+  color: var(--color-text-muted);
+}

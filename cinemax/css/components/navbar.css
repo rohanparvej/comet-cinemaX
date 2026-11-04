@@ -1,0 +1,37 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-navbar);
+  background: rgba(14, 13, 11, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--container-width);
+  height: var(--navbar-height);
+  margin: 0 auto;
+  padding: 0 var(--space-3);
+}
+
+/* Logo (left). The SVG follows --color-primary via currentColor. */
+.logo {
+  display: inline-flex;
+  color: var(--color-primary);
+  transition: color var(--speed-fast) var(--ease);
+}
+
+.logo:hover {
+  color: var(--color-secondary);
+}
+
+.logo__svg {
+  height: 36px;
+  width: auto;
+  display: block;
+}
