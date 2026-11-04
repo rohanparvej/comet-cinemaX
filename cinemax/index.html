@@ -38,6 +38,7 @@
     <nav class="menu" id="menu" aria-hidden="true">
       <ul class="menu__list">
         <li><a class="menu__link" href="#home">Home</a></li>
+        <li><a class="menu__link" href="#about">About</a></li>
         <li><a class="menu__link" href="#now-playing">Now Playing</a></li>
         <li><a class="menu__link" href="#polls-reviews">Polls &amp; Reviews</a></li>
         <li><a class="menu__link" href="admin.html">Admin</a></li>
@@ -56,7 +57,7 @@
       </div>
 
       <!-- Scroll cue -->
-      <a class="hero__scroll" href="#now-playing">
+      <a class="hero__scroll" href="#about">
         <span>Explore more</span>
         <svg class="hero__scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -64,6 +65,49 @@
         </svg>
       </a>
     </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about">
+      <div class="about__inner">
+        <!-- Halloween Animation Component (easily swappable for any other event) -->
+        <div class="event-animation halloween-animation" aria-hidden="true">
+          <span class="halloween-item halloween-item--bat">🦇</span>
+          <span class="halloween-item halloween-item--ghost">👻</span>
+          <span class="halloween-item halloween-item--pumpkin">🎃</span>
+        </div>
+
+        <div class="about__header">
+          <span class="about__label">Discover Cinemax</span>
+          <h2 class="about__title">About</h2>
+        </div>
+
+        <div class="about__content-grid">
+          <p class="about__description">
+            Cinemax is an immersive sanctuary crafted for cinephiles, projection enthusiasts, and midnight screening devotees. Built from the ground up to celebrate the tactile magic of cinema, our platform blends community-driven screening polls, rich reviews, and open-source transparency into a singular atmospheric experience. Sit back, adjust your focus, and immerse yourself in stories worth sharing.
+          </p>
+
+          <ul class="about__highlights">
+            <li class="about__highlight-card">
+              <span class="about__highlight-icon">🔓</span>
+              <h3 class="about__highlight-title">100% FOSS</h3>
+              <p class="about__highlight-desc">Fully open-source software ensuring complete freedom, privacy, and community ownership.</p>
+            </li>
+            <li class="about__highlight-card">
+              <span class="about__highlight-icon">🎬</span>
+              <h3 class="about__highlight-title">Cinema Love</h3>
+              <p class="about__highlight-desc">Dedicated to preserving the passionate culture of film screenings, deep reviews, and shared cinematic moments.</p>
+            </li>
+            <li class="about__highlight-card">
+              <span class="about__highlight-icon">✨</span>
+              <h3 class="about__highlight-title">Creative</h3>
+              <p class="about__highlight-desc">Designed with meticulous attention to detail, moody atmospheric lighting, and fluid motion aesthetics.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
 
     <!-- NOW PLAYING -->
     <section class="now-playing" id="now-playing">
@@ -74,6 +118,8 @@
     <!-- POLLS & REVIEWS (built by js/components/polls-reviews.js from the backend data) -->
     <section class="polls-reviews" id="polls-reviews"></section>
   </main>
+
+
 
   <!-- Scripts in correct order: settings, services, components, then main -->
   <script src="js/config.js" defer></script>

@@ -1,0 +1,87 @@
+/* ==========================================================
+   HALLOWEEN ANIMATION COMPONENT
+   Easily swappable event animation component.
+   Place inside css/components/
+   ========================================================== */
+
+.event-animation {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.halloween-item {
+  position: absolute;
+  font-size: 1.75rem;
+  opacity: 0.75;
+  filter: drop-shadow(0 4px 12px rgba(251, 133, 0, 0.4));
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* Floating Bat */
+.halloween-item--bat {
+  top: 15%;
+  left: 10%;
+  animation-name: float-bat;
+  animation-duration: 8s;
+}
+
+/* Floating Ghost */
+.halloween-item--ghost {
+  bottom: 20%;
+  right: 12%;
+  animation-name: float-ghost;
+  animation-duration: 6s;
+  animation-delay: 1s;
+}
+
+/* Pulsing/Floating Pumpkin */
+.halloween-item--pumpkin {
+  top: 50%;
+  right: 8%;
+  animation-name: pulse-pumpkin;
+  animation-duration: 5s;
+  animation-delay: 2s;
+}
+
+@keyframes float-bat {
+  0%, 100% {
+    transform: translate(0, 0) rotate(-10deg) scale(1);
+  }
+  50% {
+    transform: translate(40px, -25px) rotate(10deg) scale(1.1);
+  }
+}
+
+@keyframes float-ghost {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+@keyframes pulse-pumpkin {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 4px 12px rgba(251, 133, 0, 0.3));
+  }
+  50% {
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 6px 20px rgba(255, 183, 3, 0.7));
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .event-animation,
+  .halloween-item {
+    animation: none !important;
+  }
+}
