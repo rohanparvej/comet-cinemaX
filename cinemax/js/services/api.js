@@ -45,6 +45,10 @@ async function apiRequest(path, options) {
     // no JSON body
   }
 
+  if (response.ok && json === null) {
+    throw new ApiError("The server sent an unexpected answer. Check the API address in js/config.js.", response.status);
+  }
+  
   if (!response.ok) {
     const message = (json && json.message) || "Request failed (" + response.status + ").";
     const failure = new ApiError(message, response.status);

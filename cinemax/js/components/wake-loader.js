@@ -79,7 +79,9 @@ const wakeLoader = (function () {
         cache: "no-store",
         signal: controller.signal
       });
-      return response.ok;
+      if (!response.ok) return false;
+      const json = await response.json();
+      return Boolean(json && json.success);
     } catch (error) {
       return false;
     } finally {

@@ -39,13 +39,17 @@ initNavbar();
 async function startHome() {
   // If the free server is asleep, a loader is shown until it answers (see wake-loader.js)
   wakeLoader.begin();
-  let data = await loadHomeData();
-  if (data.error) {
-    // Possibly a sleeping server: wait until it answers, then load once more
-    await wakeLoader.untilAwake();
+  let data;
+  try {
     data = await loadHomeData();
+    if (data.error) {
+      // Possibly a sleeping server: wait until it answers, then load once more
+      await wakeLoader.untilAwake();
+      data = await loadHomeData();
+    }
+  } finally {
+    wakeLoader.end();
   }
-  wakeLoader.end();
   initNowPlaying(data);
   initPollsReviews(data);
 }
