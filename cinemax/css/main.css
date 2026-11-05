@@ -9,6 +9,7 @@
 @import "./components/halloween-animation.css";
 @import "./components/poster-card.css";
 @import "./components/footer.css";
+@import "./components/wake-loader.css";
 @import "./sections/hero.css";
 @import "./sections/about.css";
 @import "./sections/now-playing.css";

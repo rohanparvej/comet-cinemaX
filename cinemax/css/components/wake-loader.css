@@ -1,0 +1,104 @@
+/* "Waking up" screen (js/components/wake-loader.js). Only transform/opacity animate, so it stays light. */
+
+.wake {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 183, 3, 0.12), transparent 55%),
+    var(--color-bg);
+  opacity: 0;
+  transition: opacity 400ms var(--ease);
+}
+
+.wake.is-visible {
+  opacity: 1;
+}
+
+.wake__reel {
+  width: 96px;
+  height: 96px;
+  fill: var(--color-bg);
+  animation: wake-spin 2.4s linear infinite;
+  filter: drop-shadow(0 0 18px rgba(255, 183, 3, 0.35));
+}
+
+.wake__reel-body {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 4;
+}
+
+.wake__reel-hub {
+  fill: var(--color-secondary);
+}
+
+.wake__brand {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 1.6rem;
+  letter-spacing: 0.4em;
+  padding-left: 0.4em; /* balances the trailing letter-spacing */
+  color: var(--color-text);
+}
+
+/* Film strip with a light that slides along it */
+.wake__strip {
+  position: relative;
+  overflow: hidden;
+  width: min(240px, 70vw);
+  height: 10px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, var(--color-border) 0 8px, transparent 8px 14px);
+}
+
+.wake__strip span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  animation: wake-slide 1.6s var(--ease) infinite;
+}
+
+.wake__text {
+  min-height: 3em;
+  max-width: 28ch;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  animation: wake-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes wake-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wake-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+@keyframes wake-pulse {
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wake__reel,
+  .wake__strip span,
+  .wake__text {
+    animation: none;
+  }
+  .wake__strip span {
+    width: 100%;
+    opacity: 0.5;
+  }
+}

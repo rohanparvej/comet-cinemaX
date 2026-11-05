@@ -5,6 +5,7 @@
 @import "./base/tokens.css";
 @import "./base/global.css";
 @import "./components/password-field.css";
+@import "./components/wake-loader.css";
 
 .admin {
   max-width: 1000px;

@@ -135,9 +135,11 @@ function showAdminDashboard() {
   runAdminAction(refreshAdmin);
 }
 
-// Start
-if (adminSession.load()) {
-  showAdminDashboard();
-} else {
-  showAdminLogin("");
-}
+// Start (a loader is shown first if the free server is asleep, see wake-loader.js)
+wakeLoader.ensureAwake().then(function () {
+  if (adminSession.load()) {
+    showAdminDashboard();
+  } else {
+    showAdminLogin("");
+  }
+});

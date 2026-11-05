@@ -14,6 +14,9 @@ import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
 
+// Render sits behind its own load balancer: trust it so req.ip is the real visitor (rate limiting)
+app.set('trust proxy', 1);
+
 // Default helmet CSP minus upgrade-insecure-requests (it breaks plain http on localhost in some browsers)
 app.use(
   helmet({
@@ -50,7 +53,7 @@ app.use('/api/site', siteImageRoutes);
 const frontendDir = path.resolve(
   env.frontendDir || path.join(path.dirname(fileURLToPath(import.meta.url)), '../../cinemax')
 );
-if (fs.existsSync(path.join(frontendDir, 'index.html'))) {
+if (env.serveFrontend && fs.existsSync(path.join(frontendDir, 'index.html'))) {
   app.use(express.static(frontendDir));
 }
 

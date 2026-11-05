@@ -30,9 +30,12 @@ export async function getImage(req, res) {
   checkSlot(req.params.key);
   const doc = await SiteImage.findOne({ key: req.params.key });
   if (!doc) throw new AppError('No image set.', 404);
+  // With ?v=<timestamp> the URL changes whenever the image does, so it can be cached for a year
+  // (browser + Cloudflare). Without ?v it is only cached for a day.
+  const versioned = typeof req.query.v === 'string' && req.query.v !== '';
   res.set({
     'Content-Type': doc.content_type,
-    'Cache-Control': 'public, max-age=86400',
+    'Cache-Control': versioned ? 'public, max-age=31536000, immutable' : 'public, max-age=86400',
     // helmet blocks cross-origin use by default; the frontend (another domain) must be able to show it
     'Cross-Origin-Resource-Policy': 'cross-origin',
   });
