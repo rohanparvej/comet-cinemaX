@@ -49,7 +49,7 @@ function showFeatured(movie, backgroundUrl) {
   }
 
   const inner = createEl("div", "featured__inner");
-  inner.appendChild(createEl("p", "featured__label", "Now Playing"));
+  inner.appendChild(createEl("p", "featured__label", "Halloween Screening"));
 
   if (!movie) {
     inner.appendChild(createEl("h2", "featured__title", "Next screening coming soon"));

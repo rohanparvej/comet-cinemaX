@@ -59,6 +59,14 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
+@media (max-width: 400px) {
+  .about__label {
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+  }
+}
+
 .about__title {
   font-family: var(--font-heading);
   font-weight: 300;
@@ -69,28 +77,77 @@
 
 .about__content-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 
 @media (min-width: 900px) {
   .about__content-grid {
-    grid-template-columns: 1.2fr 1.8fr;
-    align-items: center;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
   }
 }
 
-.about__description {
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
-  color: var(--color-text-muted);
-  line-height: 1.7;
-  max-width: 46ch;
+/* The two text blocks (Halloween + About Cinemax) */
+.about__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
+.about__subtitle {
+  margin-bottom: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  line-height: 1.25;
+  color: var(--color-text);
+}
+
+.about__description {
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.about__note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+/* Floating emojis sit behind the text now that there is more of it */
+.about .event-animation {
+  z-index: 0;
+}
+
+.about__header,
+.about__text,
+.about__highlights {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 899px) {
+  .about .halloween-item {
+    opacity: 0.4;
+  }
+}
+
+/* Cards: one column on phones, two from tablets up */
 .about__highlights {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
+}
+
+@media (min-width: 560px) {
+  .about__highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .about__highlight-card {
