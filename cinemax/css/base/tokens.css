@@ -4,18 +4,18 @@
    ========================================================== */
 
 :root {
-  /* Brand palette (Halloween: yellow + orange). Swap these to re-theme. */
-  --color-primary: #ffb703;      /* yellow */
-  --color-secondary: #fb8500;    /* orange */
+  /* Brand palette (olive green + soft yellow). Swap these to re-theme. */
+  --color-primary: #d6c35a;      /* soft yellow */
+  --color-secondary: #8a9a3b;    /* olive */
 
   /* Surfaces (dark theme) */
-  --color-bg: #0e0d0b;
-  --color-surface: #17150f;
+  --color-bg: #0b0f0a;
+  --color-surface: #121a11;
   --color-border: rgba(255, 255, 255, 0.08);
 
   /* Text */
-  --color-text: #f4efe6;
-  --color-text-muted: #a39e92;
+  --color-text: #eef0e4;
+  --color-text-muted: #9ca593;
 
   /* Type */
   --font-heading: "Fraunces", Georgia, serif;

@@ -16,7 +16,7 @@
   position: absolute;
   font-size: 1.75rem;
   opacity: 0.75;
-  filter: drop-shadow(0 4px 12px rgba(251, 133, 0, 0.4));
+  filter: drop-shadow(0 4px 12px rgba(138, 154, 59, 0.4));
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
@@ -70,11 +70,11 @@
 @keyframes pulse-pumpkin {
   0%, 100% {
     transform: scale(1) rotate(0deg);
-    filter: drop-shadow(0 4px 12px rgba(251, 133, 0, 0.3));
+    filter: drop-shadow(0 4px 12px rgba(138, 154, 59, 0.3));
   }
   50% {
     transform: scale(1.15) rotate(5deg);
-    filter: drop-shadow(0 6px 20px rgba(255, 183, 3, 0.7));
+    filter: drop-shadow(0 6px 20px rgba(214, 195, 90, 0.7));
   }
 }
 

@@ -12,7 +12,7 @@
   padding: var(--space-3);
   text-align: center;
   background:
-    radial-gradient(circle at 50% 40%, rgba(255, 183, 3, 0.12), transparent 55%),
+    radial-gradient(circle at 50% 40%, rgba(214, 195, 90, 0.12), transparent 55%),
     var(--color-bg);
   opacity: 0;
   transition: opacity 400ms var(--ease);
@@ -27,7 +27,7 @@
   height: 96px;
   fill: var(--color-bg);
   animation: wake-spin 2.4s linear infinite;
-  filter: drop-shadow(0 0 18px rgba(255, 183, 3, 0.35));
+  filter: drop-shadow(0 0 18px rgba(214, 195, 90, 0.35));
 }
 
 .wake__reel-body {

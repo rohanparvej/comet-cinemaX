@@ -22,7 +22,7 @@
   z-index: -1;
   width: 70%;
   height: 60%;
-  background: radial-gradient(ellipse at center, rgba(251, 133, 0, 0.12), transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(138, 154, 59, 0.12), transparent 70%);
   pointer-events: none;
 }
 
@@ -119,11 +119,11 @@
   /* No lift/move on hover: a button that moves away from the pointer makes it flicker */
   background-color: var(--color-primary);
   color: var(--color-bg);
-  box-shadow: 0 7px 20px rgba(255, 183, 3, 0.2);
+  box-shadow: 0 7px 20px rgba(214, 195, 90, 0.2);
 }
 
 .polls-reviews__button:active:not(:disabled) {
-  box-shadow: 0 3px 10px rgba(255, 183, 3, 0.14);
+  box-shadow: 0 3px 10px rgba(214, 195, 90, 0.14);
 }
 
 .polls-reviews__button:disabled {
@@ -143,7 +143,7 @@
   background: linear-gradient(100deg, var(--color-primary), var(--color-secondary));
   filter: brightness(1.12);
   color: var(--color-bg);
-  box-shadow: 0 8px 24px rgba(251, 133, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(138, 154, 59, 0.25);
 }
 
 .polls-reviews__button--ghost {
@@ -153,9 +153,9 @@
 
 .polls-reviews__button--ghost:hover:not(:disabled) {
   border-color: var(--color-primary);
-  background: rgba(255, 183, 3, 0.07);
+  background: rgba(214, 195, 90, 0.07);
   color: var(--color-primary);
-  box-shadow: 0 6px 18px rgba(255, 183, 3, 0.1);
+  box-shadow: 0 6px 18px rgba(214, 195, 90, 0.1);
 }
 
 .polls-reviews__button--small {
@@ -197,10 +197,10 @@
   background: linear-gradient(160deg, var(--tone-a), var(--tone-b));
 }
 
-.poll:nth-child(4n + 1) { --tone-a: #ffb703; --tone-b: #8a4200; }
-.poll:nth-child(4n + 2) { --tone-a: #fb8500; --tone-b: #4a1d00; }
-.poll:nth-child(4n + 3) { --tone-a: #ffd166; --tone-b: #b25400; }
-.poll:nth-child(4n + 4) { --tone-a: #e85d04; --tone-b: #3a1500; }
+.poll:nth-child(4n + 1) { --tone-a: #d6c35a; --tone-b: #4a4a12; }
+.poll:nth-child(4n + 2) { --tone-a: #8a9a3b; --tone-b: #1f2d12; }
+.poll:nth-child(4n + 3) { --tone-a: #e6d98a; --tone-b: #6b7a24; }
+.poll:nth-child(4n + 4) { --tone-a: #a3b04a; --tone-b: #17240e; }
 
 .poll__thumb-img {
   width: 100%;
@@ -217,7 +217,7 @@
   font-family: var(--font-heading);
   font-style: italic;
   font-size: 2.25rem;
-  color: rgba(20, 15, 6, 0.8);
+  color: rgba(15, 26, 12, 0.8);
 }
 
 .poll__body {
