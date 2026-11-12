@@ -48,11 +48,12 @@ export async function createChoice(req, res) {
   res.status(201).json({ success: true, data: choice });
 }
 
-// Soft delete: the record stays, is_deleted flips to true
+// Soft delete: the record stays, is_deleted flips to true.
+// Its votes are released too, so the people who voted for it can vote again.
 export async function removeChoice(req, res) {
   const choice = await ScreeningChoice.findOneAndUpdate(
     { _id: req.params.id, is_deleted: false },
-    { is_deleted: true },
+    { is_deleted: true, chosen_by: [], number_of_votes: 0 },
     { new: true }
   );
   if (!choice) throw new AppError('Movie not found or already deleted.', 404);

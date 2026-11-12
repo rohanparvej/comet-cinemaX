@@ -37,7 +37,9 @@ export async function vote(req, res) {
     throw new AppError('Voting is closed. A screening winner has been announced.', 409);
   }
 
-  if (await ScreeningChoice.exists({ chosen_by: userId })) {
+  // Only votes on movies still in the poll count (same rule as myVote above),
+  // so a vote left on a removed movie can never lock a user out.
+  if (await ScreeningChoice.exists({ chosen_by: userId, is_deleted: false })) {
     throw new AppError('You have already voted. A vote cannot be changed.', 409);
   }
 
