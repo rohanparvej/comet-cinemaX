@@ -36,6 +36,21 @@ async function loadHomeData() {
 
 initNavbar();
 
+// Hero background: the image an admin uploaded replaces the built-in one in index.html.
+// If the uploaded image fails to load, the built-in one is put back.
+function showHeroBackground(images) {
+  const hero = document.querySelector(".hero__bg");
+  const uploaded = images && images.hero_background;
+  if (!hero || !uploaded) return;
+
+  const fallback = hero.getAttribute("src");
+  hero.addEventListener("error", function restore() {
+    hero.removeEventListener("error", restore);
+    hero.src = fallback;
+  });
+  hero.src = CINEMAX_CONFIG.apiBaseUrl + uploaded.url;
+}
+
 async function startHome() {
   // If the free server is asleep, a loader is shown until it answers (see wake-loader.js)
   wakeLoader.begin();
@@ -50,6 +65,7 @@ async function startHome() {
   } finally {
     wakeLoader.end();
   }
+  showHeroBackground(data.images);
   initNowPlaying(data);
   initPollsReviews(data);
 }

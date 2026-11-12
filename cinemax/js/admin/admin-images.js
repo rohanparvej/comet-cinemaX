@@ -6,6 +6,12 @@ const IMAGE_SLOTS = [
     key: "now_playing_background",
     label: "Now Playing background",
     hint: "Shown behind the featured movie on the home page. A wide image works best."
+  },
+  {
+    key: "hero_background",
+    label: "Hero background",
+    hint: "Full-screen image at the very top of the home page. A wide, landscape image works best.",
+    emptyText: "No image set. The built-in hero image is used."
   }
 ];
 
@@ -27,7 +33,7 @@ function createImageSlot(slot) {
   const preview = createEl("div", "admin-image__preview");
   const previewImg = createEl("img", "admin-image__img");
   previewImg.alt = slot.label + " preview";
-  const empty = createEl("p", "admin-muted admin-image__empty", "No image set. The default colour background is used.");
+  const empty = createEl("p", "admin-muted admin-image__empty", slot.emptyText || "No image set. The default colour background is used.");
   preview.appendChild(previewImg);
   preview.appendChild(empty);
   function showPreview(url) {
@@ -58,7 +64,7 @@ function createImageSlot(slot) {
   buttons.appendChild(upload);
   if (current) {
     buttons.appendChild(createButton("Remove image", "admin-btn admin-btn--danger", function () {
-      if (!confirm("Remove the " + slot.label + "? The home page goes back to the default background.")) return;
+      if (!confirm("Remove the " + slot.label + "? The home page goes back to the default image.")) return;
       runAdminAction(async function () {
         await adminRequest("/api/admin/images/" + slot.key, { method: "DELETE" });
         await refreshAdmin();

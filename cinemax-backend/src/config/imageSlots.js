@@ -3,4 +3,5 @@
 // cinemax/js/admin/admin-images.js. key -> label
 export const IMAGE_SLOTS = {
   now_playing_background: 'Now Playing background',
+  hero_background: 'Hero background',
 };
