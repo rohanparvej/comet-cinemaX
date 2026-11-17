@@ -6,9 +6,13 @@ const recommender = { path: 'recommended_by', select: 'username' };
 
 // Landing page: current poll entries - soft-deleted ones are hidden.
 // recommended_by.id lets the page grey out a movie for the user who recommended it.
+// Vote counts are secret until a winner is declared: number_of_votes is only
+// selected (and returned) once a current winner exists. chosen_by is never selected.
 export async function listChoices(_req, res) {
+  const closed = await ScreeningWinner.exists({ is_current: true });
+  const fields = 'title_name release_year runtime recommended_by' + (closed ? ' number_of_votes' : '');
   const choices = await ScreeningChoice.find({ is_deleted: false })
-    .select('title_name release_year runtime number_of_votes recommended_by')
+    .select(fields)
     .populate(recommender)
     .sort({ title_name: 1 });
   res.json({ success: true, data: choices });
@@ -60,6 +64,6 @@ export async function vote(req, res) {
   res.json({
     success: true,
     message: 'Vote recorded.',
-    data: { id: updated.id, title_name: updated.title_name, number_of_votes: updated.number_of_votes },
+    data: { id: updated.id, title_name: updated.title_name },
   });
 }

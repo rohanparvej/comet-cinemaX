@@ -13,6 +13,7 @@ const pollsState = {
   user: null,        // logged in user, or null
   winner: null,      // current winner (also reviewable)
   choices: [],       // movies up for a vote
+  images: {},        // uploaded site images (poll posters live here)
   reviews: [],       // recent reviews from the backend
   myVoteId: null,    // id of the movie I voted for (voting is once only)
   selectedPoll: "",  // movie picked in the poll, not submitted yet
@@ -147,16 +148,30 @@ async function submitPollVote(button) {
   pollsState.selectedPoll = "";
 
   try {
-    await reloadChoices(); // fresh vote counts
+    await reloadChoices(); // fresh list (counts only appear once a winner is declared)
   } catch (error) {
     // keep the old counts if this fails
   }
   showPollsReviews();
 }
 
-function createPollThumb(poll) {
+// The poll shows at most 2 posters: box 1 -> poll_poster_1, box 2 -> poll_poster_2.
+// No poster (or it fails to load) -> the first letter of the title is shown instead.
+function createPollThumb(poll, index) {
   const thumb = createEl("div", "poll__thumb");
-  thumb.appendChild(createEl("span", "poll__thumb-letter", poll.title_name.charAt(0)));
+  const letter = createEl("span", "poll__thumb-letter", poll.title_name.charAt(0));
+  thumb.appendChild(letter);
+
+  const poster = pollsState.images && pollsState.images["poll_poster_" + (index + 1)];
+  if (poster) {
+    const img = createEl("img", "poll__thumb-img");
+    img.alt = poll.title_name + " poster";
+    img.loading = "lazy";
+    img.addEventListener("error", function () { img.remove(); });
+    img.src = CINEMAX_CONFIG.apiBaseUrl + poster.url;
+    thumb.insertBefore(img, letter);
+    img.addEventListener("load", function () { letter.style.display = "none"; });
+  }
   return thumb;
 }
 
@@ -208,9 +223,9 @@ function createPollChoice(poll) {
   return choice;
 }
 
-function createPollCard(poll) {
+function createPollCard(poll, index) {
   const card = createEl("article", "poll");
-  card.appendChild(createPollThumb(poll));
+  card.appendChild(createPollThumb(poll, index));
 
   const body = createEl("div", "poll__body");
   body.appendChild(createEl("h4", "poll__title", poll.title_name));
@@ -221,8 +236,11 @@ function createPollCard(poll) {
     body.appendChild(createEl("p", "poll__meta", "Recommended by " + poll.recommended_by.username));
   }
 
+  // The backend only sends vote counts once a winner is declared; never show a count before that
   const votes = poll.number_of_votes;
-  body.appendChild(createEl("p", "poll__stats", votes + (votes === 1 ? " vote" : " votes")));
+  if (typeof votes === "number") {
+    body.appendChild(createEl("p", "poll__stats", votes + (votes === 1 ? " vote" : " votes")));
+  }
 
   if (pollsState.user) {
     const choice = createPollChoice(poll);
@@ -251,8 +269,8 @@ function showPolls() {
   }
 
   const grid = createEl("div", "polls__grid");
-  pollsState.choices.forEach(function (poll) {
-    grid.appendChild(createPollCard(poll));
+  pollsState.choices.forEach(function (poll, index) {
+    grid.appendChild(createPollCard(poll, index));
   });
   box.appendChild(grid);
 
@@ -507,6 +525,7 @@ async function initPollsReviews(data) {
 
   pollsState.winner = data.winner;
   pollsState.choices = data.choices;
+  pollsState.images = data.images || {};
   pollsState.reviews = data.reviews;
   if (data.error) pollsState.pollMessage = data.error;
 

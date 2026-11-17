@@ -12,6 +12,18 @@ const IMAGE_SLOTS = [
     label: "Hero background",
     hint: "Full-screen image at the very top of the home page. A wide, landscape image works best.",
     emptyText: "No image set. The built-in hero image is used."
+  },
+  {
+    key: "poll_poster_1",
+    label: "Poll poster 1",
+    hint: "Poster for the FIRST movie box in the poll (the movie that comes first alphabetically). A tall, portrait image (2:3) works best. Uploading again replaces it.",
+    emptyText: "No poster set. The movie's first letter is shown instead."
+  },
+  {
+    key: "poll_poster_2",
+    label: "Poll poster 2",
+    hint: "Poster for the SECOND movie box in the poll. A tall, portrait image (2:3) works best. Uploading again replaces it.",
+    emptyText: "No poster set. The movie's first letter is shown instead."
   }
 ];
 
@@ -64,7 +76,7 @@ function createImageSlot(slot) {
   buttons.appendChild(upload);
   if (current) {
     buttons.appendChild(createButton("Remove image", "admin-btn admin-btn--danger", function () {
-      if (!confirm("Remove the " + slot.label + "? The home page goes back to the default image.")) return;
+      if (!confirm("Remove the " + slot.label + "? The home page goes back to the default.")) return;
       runAdminAction(async function () {
         await adminRequest("/api/admin/images/" + slot.key, { method: "DELETE" });
         await refreshAdmin();
