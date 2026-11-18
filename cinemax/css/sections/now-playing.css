@@ -1,6 +1,7 @@
 /* ==========================================================
-   NOW PLAYING: featured movie + parallax poster lineup.
-   Content comes from js/components/now-playing-data.js
+   NOW PLAYING: featured movie + shortlist scroller
+   (shortlisted runner-up, bigger, then the upcoming movies).
+   Content comes from the backend, see js/main.js
    ========================================================== */
 
 .now-playing {
@@ -148,76 +149,168 @@
   color: var(--color-text-muted);
 }
 
-/* ---------- Poster lineup (parallax) ---------- */
+/* ---------- Shortlist scroller ---------- */
 
-/* JS sets the exact height. This is only a fallback. */
 .lineup {
   position: relative;
-  height: 300vh;
+  padding: var(--space-4) 0 calc(var(--space-4) * 1.5);
+  background:
+    radial-gradient(ellipse 60% 70% at 15% 0%, rgba(138, 154, 59, 0.12), transparent 70%),
+    var(--color-bg);
 }
 
-/* Stays pinned to the screen while you scroll through .lineup */
 .lineup__stage {
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-4);
-  height: 100vh;
-  height: 100svh;
-  padding-top: var(--navbar-height); /* keep content clear of the fixed navbar */
-  overflow: hidden;
+  --fade: 56px; /* width of the soft edge on a side that can still scroll */
+  position: relative;
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
 }
 
 .lineup__head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
-  width: 100%;
-  max-width: var(--container-width);
-  margin: 0 auto;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.lineup__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.lineup__label::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
 }
 
 .lineup__title {
+  margin-top: 0.4rem;
   font-family: var(--font-heading);
   font-weight: 300;
-  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.05;
   letter-spacing: -0.01em;
 }
 
-.lineup__track {
-  position: relative;
+.lineup__lead {
+  max-width: 44ch;
+  margin-top: 0.5rem;
+  color: var(--color-text-muted);
+}
+
+.lineup__arrows {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: max-content;
-  padding: 0 12vw;
-  will-change: transform;
-}
-
-/* One poster box. JS sets --offset (-1..1) and --focus (0..1). */
-.poster {
-  --offset: 0;
-  --focus: 1;
-  --dir: 1;
+  gap: var(--space-1);
   flex: 0 0 auto;
-  width: clamp(200px, 26vw, 340px);
-  margin-bottom: 70px;
-  transform:
-    translateY(calc(var(--offset) * var(--dir) * -70px))
-    rotate(calc(var(--offset) * var(--dir) * 5deg))
-    scale(calc(0.86 + var(--focus) * 0.14));
-  opacity: calc(0.4 + var(--focus) * 0.6);
 }
 
-/* Every second poster sits lower and drifts the other way */
-.poster:nth-child(even) {
-  --dir: -1;
-  margin-top: 70px;
-  margin-bottom: 0;
+.lineup__arrows[hidden] {
+  display: none;
+}
+
+.lineup__arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease),
+    background var(--speed-fast) var(--ease), opacity var(--speed-fast) var(--ease);
+}
+
+.lineup__arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.lineup__arrow:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(214, 195, 90, 0.08);
+}
+
+.lineup__arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* The scroller itself: a normal horizontal scroll, posters snap into place */
+.lineup__track {
+  display: flex;
+  align-items: flex-end; /* posters share a bottom line, so the shortlisted one stands taller */
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--space-3);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(214, 195, 90, 0.35) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lineup__track:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Soft fade on an edge only while there is more to scroll that way */
+.lineup__stage.can-scroll-back .lineup__track {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade));
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--fade));
+}
+
+.lineup__stage.can-scroll-forward .lineup__track {
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 var(--fade));
+  mask-image: linear-gradient(to left, transparent 0, #000 var(--fade));
+}
+
+.lineup__stage.can-scroll-back.can-scroll-forward .lineup__track {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+}
+
+/* One movie */
+.poster {
+  position: relative;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* The shortlisted movie is bigger than the upcoming ones */
+.poster--shortlisted {
+  width: clamp(230px, 30vw, 310px);
+}
+
+.poster--upcoming {
+  width: clamp(150px, 19vw, 205px);
+}
+
+/* A thin line separates the shortlisted movie(s) from the upcoming ones */
+.poster--shortlisted + .poster--upcoming {
+  margin-left: var(--space-3);
+}
+
+.poster--shortlisted + .poster--upcoming::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: calc(var(--space-3) * -1.5);
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--color-border) 20%, var(--color-border) 80%, transparent);
 }
 
 .poster__frame {
@@ -225,32 +318,61 @@
   aspect-ratio: 2 / 3;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--color-surface);
-  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 24px 40px -24px rgba(0, 0, 0, 0.85);
+  transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease),
+    border-color var(--speed) var(--ease);
 }
 
-/* The picture is wider than its frame and slides inside it */
+.poster--shortlisted .poster__frame {
+  border-color: rgba(214, 195, 90, 0.55);
+  box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(214, 195, 90, 0.12),
+    0 0 40px -10px rgba(214, 195, 90, 0.25);
+}
+
+.poster:hover .poster__frame {
+  transform: translateY(-6px);
+  border-color: var(--color-primary);
+}
+
+/* Soft shadow at the bottom of the picture */
+.poster__frame::after {
+  content: "";
+  position: absolute;
+  inset: 55% 0 0;
+  background: linear-gradient(to top, rgba(11, 15, 10, 0.55), transparent);
+  pointer-events: none;
+}
+
 .poster__img,
 .poster__empty {
   position: absolute;
-  top: 0;
-  left: -15%;
-  width: 130%;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  transform: translateX(calc(var(--offset) * -11%));
 }
 
 .poster__img {
   object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--speed) var(--ease), transform 700ms var(--ease);
 }
 
-/* Coloured placeholder when a poster file is not set */
+.poster__img.is-loaded {
+  opacity: 1;
+}
+
+.poster:hover .poster__img {
+  transform: scale(1.04);
+}
+
+/* Coloured placeholder when a movie has no poster (or it is still loading) */
 .poster__empty {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--space-3) 15% var(--space-3);
+  padding: var(--space-3) var(--space-2);
   background: linear-gradient(160deg, var(--tone-a), var(--tone-b));
 }
 
@@ -258,7 +380,7 @@
   font-family: var(--font-heading);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.2rem, 2.4vw, 1.8rem);
   line-height: 1.1;
   text-align: center;
   color: #0f1a0c;
@@ -270,44 +392,72 @@
 .poster:nth-child(5n + 4) { --tone-a: #a3b04a; --tone-b: #17240e; }
 .poster:nth-child(5n + 5) { --tone-a: #cdbd6a; --tone-b: #3a4a1a; }
 
+/* "Shortlisted" / "Upcoming" tag in the corner */
+.poster__badge {
+  position: absolute;
+  top: var(--space-1);
+  left: var(--space-1);
+  z-index: 1;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  background: rgba(11, 15, 10, 0.7);
+  border: 1px solid var(--color-border);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.poster--shortlisted .poster__badge {
+  color: #0f1a0c;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
 .poster__title {
   margin-top: var(--space-2);
   font-family: var(--font-heading);
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  /* always two lines tall, so the picture bottoms line up even when one title wraps */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.4em;
+}
+
+.poster--shortlisted .poster__title {
+  font-size: 1.4rem;
 }
 
 .poster__meta {
+  margin-top: 0.15rem;
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
 
-/* Reduced motion: no pinning. The posters become a normal swipeable row. */
+@media (max-width: 599px) {
+  .lineup__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Reduced motion: no lifting, zooming or smooth scrolling */
 @media (prefers-reduced-motion: reduce) {
-  .lineup {
-    height: auto !important;
-  }
-
-  .lineup__stage {
-    position: static;
-    height: auto;
-    padding: var(--space-4) 0;
-  }
-
-  .lineup__track {
-    width: auto;
-    overflow-x: auto;
-    transform: none !important;
-  }
-
-  .poster {
+  .poster:hover .poster__frame,
+  .poster:hover .poster__img {
     transform: none;
-    opacity: 1;
-    margin: 0;
   }
 
-  .poster__img,
-  .poster__empty {
-    transform: none;
+  .poster__frame,
+  .poster__img {
+    transition: none;
   }
 }

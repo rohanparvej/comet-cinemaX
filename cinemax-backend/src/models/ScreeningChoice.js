@@ -12,6 +12,12 @@ const screeningChoiceSchema = new mongoose.Schema(
     chosen_by: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     runtime: { type: Number, required: true, min: 1 }, // minutes
     details: { type: String, trim: true },
+    // Poster as base64. `data` is left out of normal queries (select: false) so lists stay light.
+    poster: {
+      content_type: { type: String },
+      data: { type: String, select: false },
+      updated_at: { type: Date },
+    },
     is_deleted: { type: Boolean, default: false },
   },
   { collection: 'screening_choices', timestamps: true }

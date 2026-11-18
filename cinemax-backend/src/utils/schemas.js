@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { env } from '../config/env.js';
 
 export const objectId = Joi.string().hex().length(24);
 export const idParam = Joi.object({ id: objectId.required() });
@@ -25,12 +26,33 @@ export const movieLogBody = Joi.object({
   comment: Joi.string().trim().max(500).allow(''),
 });
 
+// A poster is a base64 data URI. Its real type and size are checked again in utils/poster.js
+const posterDataUri = Joi.string().max(env.adminJsonLimitBytes);
+
+export const posterBody = Joi.object({ poster: posterDataUri.required() });
+
+export const upcomingBody = Joi.object({
+  title_name: Joi.string().trim().min(1).max(200).required(),
+  release_year: releaseYear.required(),
+  runtime: Joi.number().integer().min(1).max(1000),
+  details: Joi.string().trim().max(2000).allow(''),
+  poster: posterDataUri, // optional: can also be set later
+});
+
+export const upcomingUpdateBody = Joi.object({
+  title_name: Joi.string().trim().min(1).max(200),
+  release_year: releaseYear,
+  runtime: Joi.number().integer().min(1).max(1000),
+  details: Joi.string().trim().max(2000).allow(''),
+}).min(1);
+
 export const choiceBody = Joi.object({
   title_name: Joi.string().trim().min(1).max(200).required(),
   release_year: releaseYear.required(),
   recommended_by: objectId.required(), // user id from the dropdown
   runtime: Joi.number().integer().min(1).max(1000).required(), // minutes
   details: Joi.string().trim().max(2000).allow(''),
+  poster: posterDataUri, // optional: can also be set later
 });
 
 export const declareWinnerBody = Joi.object({

@@ -3,6 +3,9 @@ import { ScreeningChoice } from '../models/ScreeningChoice.js';
 import { ScreeningWinner } from '../models/ScreeningWinner.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
+import { buildPoster, withPosterUrl } from '../utils/poster.js';
+
+const CHOICE_POSTER_BASE = '/api/screenings/choices';
 
 /* ---------- User accounts ---------- */
 
@@ -27,7 +30,7 @@ export async function listChoices(req, res) {
     .select('-chosen_by')
     .populate('recommended_by', 'username')
     .sort({ number_of_votes: -1, title_name: 1 });
-  res.json({ success: true, data: choices });
+  res.json({ success: true, data: choices.map((choice) => withPosterUrl(choice, CHOICE_POSTER_BASE)) });
 }
 
 // All active users: dropdown source for "recommended by" and the Users tab list
@@ -41,11 +44,13 @@ export async function createChoice(req, res) {
   if (!(await User.exists({ _id: req.body.recommended_by, is_deleted: { $ne: true } }))) {
     throw new AppError('Selected user does not exist.', 400);
   }
+  const { poster, ...fields } = req.body;
   const choice = await ScreeningChoice.create({
-    ...req.body,
-    details: req.body.details || undefined,
+    ...fields,
+    details: fields.details || undefined,
+    poster: poster ? buildPoster(poster) : undefined, // optional, can be set later
   });
-  res.status(201).json({ success: true, data: choice });
+  res.status(201).json({ success: true, data: withPosterUrl(choice, CHOICE_POSTER_BASE) });
 }
 
 // Soft delete: the record stays, is_deleted flips to true.
@@ -73,7 +78,7 @@ export async function votesByChoice(req, res) {
   res.json({
     success: true,
     data: choices.map((c) => {
-      const { chosen_by, ...rest } = c.toJSON();
+      const { chosen_by, ...rest } = withPosterUrl(c, CHOICE_POSTER_BASE);
       return { ...rest, voters: chosen_by };
     }),
   });

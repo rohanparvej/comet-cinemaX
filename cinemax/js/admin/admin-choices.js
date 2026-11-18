@@ -3,6 +3,7 @@
 //   - remove a movie (soft delete: it only disappears from the poll)
 //   - see who voted for each movie
 //   - declare a movie the winner
+//   - give each movie its own poster (base64, see admin-poster.js)
 
 function recommenderName(entry) {
   return entry.recommended_by && entry.recommended_by.username ? entry.recommended_by.username : "-";
@@ -48,6 +49,9 @@ function createChoiceForm() {
   details.rows = 3;
   details.maxLength = 2000;
 
+  const picker = createPosterPicker();
+  form.appendChild(picker.el);
+
   const submit = createEl("button", "admin-btn admin-btn--primary", "Add to poll");
   submit.type = "submit";
   form.appendChild(submit);
@@ -58,19 +62,19 @@ function createChoiceForm() {
       setAdminStatus("Fill in the title, year, runtime and who recommended it.", true);
       return;
     }
+    const body = {
+      title_name: title.value.trim(),
+      release_year: Number(year.value),
+      runtime: Number(runtime.value),
+      recommended_by: recommender.value,
+      details: details.value.trim()
+    };
+    if (picker.value()) body.poster = picker.value();
+
     submit.disabled = true;
     runAdminAction(async function () {
       try {
-        await adminRequest("/api/admin/choices", {
-          method: "POST",
-          body: {
-            title_name: title.value.trim(),
-            release_year: Number(year.value),
-            runtime: Number(runtime.value),
-            recommended_by: recommender.value,
-            details: details.value.trim()
-          }
-        });
+        await adminRequest("/api/admin/choices", { method: "POST", body: body });
         setAdminStatus('"' + title.value.trim() + '" added to the poll.', false);
         await refreshAdmin();
       } finally {
@@ -130,6 +134,9 @@ function createVotersList(entry) {
 
 function createChoiceRow(entry, table) {
   const row = createEl("tr", entry.is_deleted ? "is-removed" : "");
+  const posterCell = createEl("td");
+  posterCell.appendChild(createPosterThumb(entry.poster_url, entry.title_name));
+  row.appendChild(posterCell);
   row.appendChild(createEl("td", "", entry.title_name));
   row.appendChild(createEl("td", "", String(entry.release_year)));
   row.appendChild(createEl("td", "", formatRuntime(entry.runtime)));
@@ -143,7 +150,7 @@ function createChoiceRow(entry, table) {
     const votersRow = createEl("tr", "admin-table__voters");
     votersRow.hidden = true;
     const cell = createEl("td");
-    cell.colSpan = 6;
+    cell.colSpan = 7;
     cell.appendChild(createVotersList(entry));
     votersRow.appendChild(cell);
 
@@ -153,6 +160,8 @@ function createChoiceRow(entry, table) {
     });
     toggle.setAttribute("aria-expanded", "false");
     actions.appendChild(toggle);
+    actions.appendChild(createPosterReplaceButton("choices", entry));
+    if (entry.poster_url) actions.appendChild(createPosterRemoveButton("choices", entry));
     actions.appendChild(createButton("Declare winner", "admin-btn admin-btn--small admin-btn--primary", function () {
       declareWinner(entry);
     }));
@@ -201,7 +210,7 @@ function showChoicesSection() {
   const wrap = createEl("div", "admin-table-wrap");
   const table = createEl("table", "admin-table");
   const headRow = createEl("tr");
-  ["Title", "Year", "Runtime", "Recommended by", "Votes", ""].forEach(function (label) {
+  ["Poster", "Title", "Year", "Runtime", "Recommended by", "Votes", ""].forEach(function (label) {
     headRow.appendChild(createEl("th", "", label));
   });
   const thead = createEl("thead");

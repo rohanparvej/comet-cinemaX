@@ -16,6 +16,8 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   // Upload size cap for images, in bytes. Change it with MAX_IMAGE_UPLOAD_MB in .env (default 1).
   maxImageBytes: (Number(process.env.MAX_IMAGE_UPLOAD_MB) || 1) * 1024 * 1024,
+  // JSON bodies on admin routes can carry a base64 poster (about 4/3 of the image size, plus the text fields)
+  adminJsonLimitBytes: Math.ceil(((Number(process.env.MAX_IMAGE_UPLOAD_MB) || 1) * 1024 * 1024 * 4) / 3) + 64 * 1024,
   frontendDir: process.env.FRONTEND_DIR,
   // Serve the static frontend from this server: on locally, off in production (Cloudflare serves it)
   serveFrontend: process.env.SERVE_FRONTEND ? process.env.SERVE_FRONTEND === 'true' : !isProduction,

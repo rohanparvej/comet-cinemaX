@@ -23,6 +23,9 @@ export function errorHandler(err, _req, res, _next) {
     const field = Object.keys(err.keyPattern || {})[0] || 'value';
     return res.status(409).json({ success: false, message: `That ${field} is already in use.` });
   }
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({ success: false, message: 'That upload is too large.' });
+  }
   if (err?.type === 'entity.parse.failed') {
     return res.status(400).json({ success: false, message: 'Invalid JSON body.' });
   }

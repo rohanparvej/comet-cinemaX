@@ -434,3 +434,104 @@
   flex-wrap: wrap;
   gap: var(--space-1);
 }
+
+/* ---------- Posters (Movies + Upcoming tabs) ---------- */
+
+.admin-inline {
+  display: inline-block;
+}
+
+.admin-thumb {
+  display: block;
+  width: 48px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+}
+
+/* "No poster" placeholder */
+.admin-thumb--empty {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  font-size: 0.6rem;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.admin-poster-picker__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.admin-poster-picker__preview {
+  display: grid;
+  place-items: center;
+  flex: 0 0 90px;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.admin-poster-picker__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-poster-picker__img[hidden] {
+  display: none;
+}
+
+.admin-poster-picker__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.admin-upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-upcoming__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.admin-upcoming__info {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.admin-upcoming__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-btn[hidden] {
+  display: none;
+}

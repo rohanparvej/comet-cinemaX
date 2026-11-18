@@ -1,6 +1,7 @@
 import { ScreeningChoice } from '../models/ScreeningChoice.js';
 import { ScreeningWinner } from '../models/ScreeningWinner.js';
 import { AppError } from '../utils/AppError.js';
+import { withPosterUrl } from '../utils/poster.js';
 
 const recommender = { path: 'recommended_by', select: 'username' };
 
@@ -10,12 +11,13 @@ const recommender = { path: 'recommended_by', select: 'username' };
 // selected (and returned) once a current winner exists. chosen_by is never selected.
 export async function listChoices(_req, res) {
   const closed = await ScreeningWinner.exists({ is_current: true });
-  const fields = 'title_name release_year runtime recommended_by' + (closed ? ' number_of_votes' : '');
+  const fields = 'title_name release_year runtime recommended_by poster.updated_at' + (closed ? ' number_of_votes' : '');
   const choices = await ScreeningChoice.find({ is_deleted: false })
     .select(fields)
     .populate(recommender)
     .sort({ title_name: 1 });
-  res.json({ success: true, data: choices });
+  // poster_url (not the base64 itself) tells the page where to load each poster from
+  res.json({ success: true, data: choices.map((choice) => withPosterUrl(choice, '/api/screenings/choices')) });
 }
 
 // Landing page: the winner whose is_current flag is on (null if none yet)

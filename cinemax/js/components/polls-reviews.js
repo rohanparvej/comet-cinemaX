@@ -155,20 +155,22 @@ async function submitPollVote(button) {
   showPollsReviews();
 }
 
-// The poll shows at most 2 posters: box 1 -> poll_poster_1, box 2 -> poll_poster_2.
+// Each poll box shows its movie's own poster (set in admin > Movies).
 // No poster (or it fails to load) -> the first letter of the title is shown instead.
 function createPollThumb(poll, index) {
   const thumb = createEl("div", "poll__thumb");
   const letter = createEl("span", "poll__thumb-letter", poll.title_name.charAt(0));
   thumb.appendChild(letter);
 
-  const poster = pollsState.images && pollsState.images["poll_poster_" + (index + 1)];
-  if (poster) {
+  // The movie's own poster first; the "Poll poster 1/2" site images are only a backup
+  const backup = pollsState.images && pollsState.images["poll_poster_" + (index + 1)];
+  const source = posterSource(poll) || (backup ? CINEMAX_CONFIG.apiBaseUrl + backup.url : "");
+  if (source) {
     const img = createEl("img", "poll__thumb-img");
     img.alt = poll.title_name + " poster";
     img.loading = "lazy";
     img.addEventListener("error", function () { img.remove(); });
-    img.src = CINEMAX_CONFIG.apiBaseUrl + poster.url;
+    img.src = source;
     thumb.insertBefore(img, letter);
     img.addEventListener("load", function () { letter.style.display = "none"; });
   }

@@ -5,7 +5,9 @@ async function loadHomeData() {
     apiRequest("/api/screenings/winner/current"),
     apiRequest("/api/screenings/choices"),
     apiRequest("/api/movie-logs?limit=20"),
-    apiRequest("/api/site/images")
+    apiRequest("/api/site/images"),
+    // Upcoming movies for the shortlist scroller. Never blocks the page: no answer = empty list.
+    apiRequest("/api/screenings/upcoming").catch(function () { return { data: [] }; })
   ]);
 
   const failed = results.find(function (result) { return result.status === "rejected"; });
@@ -16,8 +18,8 @@ async function loadHomeData() {
   const winner = valueOf(results[0], null);
   const choices = valueOf(results[1], []);
 
-  // The lineup (poster scroll) shows the poll movies once a winner is current,
-  // except the winner itself, which is already the featured movie.
+  // The shortlist scroller shows the runner-up poll movies once a winner is current,
+  // except the winner itself (the featured movie), followed by the upcoming movies.
   const lineup = winner
     ? choices.filter(function (movie) {
         return !(movie.title_name === winner.title_name && movie.release_year === winner.release_year);
@@ -28,6 +30,7 @@ async function loadHomeData() {
     winner: winner,
     choices: choices,
     lineup: lineup,
+    upcoming: valueOf(results[4], []),
     reviews: valueOf(results[2], []),
     images: valueOf(results[3], { images: {} }).images,
     error: failed ? failed.reason.message : ""

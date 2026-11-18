@@ -16,13 +16,13 @@ const IMAGE_SLOTS = [
   {
     key: "poll_poster_1",
     label: "Poll poster 1",
-    hint: "Poster for the FIRST movie box in the poll (the movie that comes first alphabetically). A tall, portrait image (2:3) works best. Uploading again replaces it.",
+    hint: "Backup poster for the FIRST poll box (the movie that comes first alphabetically). Only used when that movie has no poster of its own: set posters per movie in the Movies tab.",
     emptyText: "No poster set. The movie's first letter is shown instead."
   },
   {
     key: "poll_poster_2",
     label: "Poll poster 2",
-    hint: "Poster for the SECOND movie box in the poll. A tall, portrait image (2:3) works best. Uploading again replaces it.",
+    hint: "Backup poster for the SECOND poll box. Only used when that movie has no poster of its own: set posters per movie in the Movies tab.",
     emptyText: "No poster set. The movie's first letter is shown instead."
   }
 ];

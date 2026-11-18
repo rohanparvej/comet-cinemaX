@@ -1,7 +1,8 @@
-// "Now Playing" section: one featured movie + a parallax lineup of posters.
+// "Now Playing" section: one featured movie + the shortlist scroller.
 // Content comes from the backend (see js/main.js):
-//   winner  : the current screening (featured, big)
-//   lineup  : the other poll movies, shown in the poster row once a winner is current
+//   winner   : the current screening (featured, big)
+//   lineup   : the shortlisted movies (poll movies that did not win), once a winner is current
+//   upcoming : upcoming movies added in admin, any number
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -76,89 +77,114 @@ function showFeatured(movie, backgroundUrl) {
   box.appendChild(inner);
 }
 
-/* ---------- Poster lineup ---------- */
+/* ---------- Shortlist scroller ----------
+   A plain horizontal scroller (swipe, trackpad, arrow buttons or keyboard):
+     - the shortlisted movie(s): poll movies that did not win. Shown bigger, first.
+     - the upcoming movies the admin added: as many as there are, smaller.
+   Every movie brings its own poster (poster_url from the backend). */
 
-function createPoster(movie) {
-  const card = createEl("article", "poster");
+function createPoster(movie, kind) {
+  const card = createEl("article", "poster poster--" + kind);
   const frame = createEl("div", "poster__frame");
 
+  // Placeholder underneath: also what you see when a movie has no poster or it fails to load
   const empty = createEl("div", "poster__empty");
   empty.appendChild(createEl("span", "poster__empty-title", movie.title_name));
   frame.appendChild(empty);
 
+  const source = posterSource(movie);
+  if (source) {
+    const img = createEl("img", "poster__img");
+    img.alt = movie.title_name + " poster";
+    img.loading = "lazy";
+    img.draggable = false;
+    img.addEventListener("load", function () { img.classList.add("is-loaded"); });
+    img.addEventListener("error", function () { img.remove(); });
+    img.src = source;
+    frame.appendChild(img);
+  }
+
+  frame.appendChild(createEl("span", "poster__badge", kind === "shortlisted" ? "Shortlisted" : "Upcoming"));
   card.appendChild(frame);
+
   card.appendChild(createEl("h3", "poster__title", movie.title_name));
-  card.appendChild(
-    createEl("p", "poster__meta", [movie.release_year, formatRuntime(movie.runtime)].filter(Boolean).join(" · "))
-  );
+  const meta = [movie.release_year, formatRuntime(movie.runtime)].filter(Boolean).join(" · ");
+  if (meta) card.appendChild(createEl("p", "poster__meta", meta));
   return card;
 }
 
-function showLineup(list) {
+function createScrollButton(direction, track) {
+  const button = createButton("", "lineup__arrow lineup__arrow--" + direction, function () {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    track.scrollBy({
+      left: (direction === "next" ? 1 : -1) * track.clientWidth * 0.8,
+      behavior: reduceMotion ? "auto" : "smooth"
+    });
+  });
+  button.setAttribute("aria-label", direction === "next" ? "Scroll to the next movies" : "Scroll to the previous movies");
+  button.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" ' +
+    'stroke-linejoin="round" aria-hidden="true"><path d="' +
+    (direction === "next" ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7") +
+    '"/></svg>';
+  return button;
+}
+
+function showLineup(shortlisted, upcoming) {
   const lineup = document.getElementById("lineup");
-  if (!lineup || !list || list.length === 0) return;
+  shortlisted = shortlisted || [];
+  upcoming = upcoming || [];
+  if (!lineup || shortlisted.length + upcoming.length === 0) return;
 
   const stage = createEl("div", "lineup__stage");
 
   const head = createEl("div", "lineup__head");
-  head.appendChild(createEl("h2", "lineup__title", "Also on the shortlist"));
+  const heading = createEl("div", "lineup__heading");
+  heading.appendChild(createEl("p", "lineup__label", shortlisted.length ? "After the vote" : "On the horizon"));
+  heading.appendChild(createEl("h2", "lineup__title", shortlisted.length ? "The Shortlist" : "Coming Up"));
+  heading.appendChild(
+    createEl(
+      "p",
+      "lineup__lead",
+      shortlisted.length
+        ? "The runner-up that just missed the screening, and what is coming after."
+        : "Films we are lining up for the big screen."
+    )
+  );
+  head.appendChild(heading);
 
   const track = createEl("div", "lineup__track");
-  list.forEach(function (movie) {
-    track.appendChild(createPoster(movie));
-  });
+  track.tabIndex = 0;
+  track.setAttribute("role", "region");
+  track.setAttribute("aria-label", "Shortlisted and upcoming movies");
+  shortlisted.forEach(function (movie) { track.appendChild(createPoster(movie, "shortlisted")); });
+  upcoming.forEach(function (movie) { track.appendChild(createPoster(movie, "upcoming")); });
+
+  const arrows = createEl("div", "lineup__arrows");
+  const previous = createScrollButton("prev", track);
+  const next = createScrollButton("next", track);
+  arrows.appendChild(previous);
+  arrows.appendChild(next);
+  head.appendChild(arrows);
 
   stage.appendChild(head);
   stage.appendChild(track);
   lineup.appendChild(stage);
-}
 
-/* ---------- Parallax scroll ----------
-   The lineup section is tall. While you scroll down through it, the stage
-   stays pinned and the row of posters slides sideways. Each poster also:
-   - drifts up / down (alternating directions) and tilts a little
-   - grows and brightens when it is near the centre
-   - moves its picture slightly inside its frame (the parallax)
-   These values are written as CSS variables; the styling is in now-playing.css */
-
-function initLineupScroll() {
-  const lineup = document.getElementById("lineup");
-  const track = lineup ? lineup.querySelector(".lineup__track") : null;
-  if (!track) return;
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduceMotion) return;
-
-  const posters = Array.from(track.children);
-  let maxShift = 0;
-
-  function measure() {
-    maxShift = Math.max(0, track.scrollWidth - window.innerWidth);
-    lineup.style.height = window.innerHeight + maxShift + "px";
-    update();
+  // Arrows and edge fades only appear when there is more to scroll
+  function updateEdges() {
+    const max = track.scrollWidth - track.clientWidth;
+    const overflowing = max > 4;
+    arrows.hidden = !overflowing;
+    stage.classList.toggle("can-scroll-back", overflowing && track.scrollLeft > 4);
+    stage.classList.toggle("can-scroll-forward", overflowing && track.scrollLeft < max - 4);
+    previous.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft >= max - 4;
   }
-
-  function update() {
-    const scrollable = lineup.offsetHeight - window.innerHeight;
-    const top = lineup.getBoundingClientRect().top;
-    const progress = scrollable > 0 ? clamp(-top / scrollable, 0, 1) : 0;
-    const shift = progress * maxShift;
-
-    track.style.transform = "translate3d(" + -shift + "px, 0, 0)";
-
-    const half = window.innerWidth / 2;
-    posters.forEach(function (poster) {
-      const center = poster.offsetLeft + poster.offsetWidth / 2 - shift;
-      const offset = clamp((center - half) / half, -1, 1); // -1 (left) .. 1 (right)
-      poster.style.setProperty("--offset", offset.toFixed(3));
-      poster.style.setProperty("--focus", (1 - Math.abs(offset)).toFixed(3));
-    });
-  }
-
-  onScrollFrame(update);
-  window.addEventListener("resize", measure);
-  window.addEventListener("load", measure); // images change the width
-  measure();
+  track.addEventListener("scroll", updateEdges, { passive: true });
+  window.addEventListener("resize", updateEdges);
+  window.addEventListener("load", updateEdges); // posters change the width
+  updateEdges();
 }
 
 /* ---------- Cutout depth ----------
@@ -188,7 +214,6 @@ function initCutoutMotion() {
 function initNowPlaying(data) {
   const background = data.images && data.images.now_playing_background;
   showFeatured(data.winner, background ? CINEMAX_CONFIG.apiBaseUrl + background.url : "");
-  showLineup(data.lineup);
+  showLineup(data.lineup, data.upcoming);
   initCutoutMotion();
-  initLineupScroll();
 }

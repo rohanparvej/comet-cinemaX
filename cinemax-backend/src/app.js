@@ -31,7 +31,10 @@ app.use(
     origin: env.corsOrigin === '*' ? true : env.corsOrigin.split(',').map((o) => o.trim()),
   })
 );
-app.use(express.json({ limit: '50kb' }));
+// Small JSON limit for the public API. Admin routes read their own (bigger) body after the login
+// check, because they can carry a base64 poster - see routes/admin.routes.js.
+const smallJson = express.json({ limit: '50kb' });
+app.use((req, res, next) => (req.path.startsWith('/api/admin') ? next() : smallJson(req, res, next)));
 
 app.get('/api/health', (_req, res) => res.json({ success: true, status: 'ok' }));
 app.use('/api/auth', authRoutes);

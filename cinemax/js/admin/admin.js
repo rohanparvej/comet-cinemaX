@@ -4,13 +4,16 @@
 //     Movies            admin-choices.js : add movies to the poll, remove them, see who voted
 //     Screening winners admin-winners.js : declare a winner, choose which winner is current
 //     Users             admin-users.js   : create user accounts, see existing users
+//     Upcoming          admin-upcoming.js: upcoming movies for the home page shortlist (each with its own poster)
 //     Images            admin-images.js  : upload the site images (Now Playing background)
+//   Poster helpers shared by Movies and Upcoming: admin-poster.js
 //   Login form: admin-login.js
 
 const adminState = {
   users: [],          // for the "recommended by" dropdown
   choices: [],        // poll entries (with voters)
   winners: [],
+  upcoming: [],       // upcoming movies (home page shortlist)
   images: {},         // which site images are set: { slot: { url, size } or null }
   maxUploadBytes: 1048576, // upload limit, read from the backend (MAX_IMAGE_UPLOAD_MB)
   showRemoved: false, // also list soft-deleted poll entries
@@ -20,6 +23,7 @@ const adminState = {
 const ADMIN_TABS = [
   { id: "choices", label: "Movies" },
   { id: "winners", label: "Screening winners" },
+  { id: "upcoming", label: "Upcoming" },
   { id: "users", label: "Users" },
   { id: "images", label: "Images" }
 ];
@@ -60,19 +64,22 @@ async function loadAdminData() {
     adminRequest("/api/admin/users"),
     adminRequest("/api/admin/votes" + (adminState.showRemoved ? "?include_deleted=true" : "")),
     adminRequest("/api/admin/winners"),
+    adminRequest("/api/admin/upcoming"),
     apiRequest("/api/site/images") // public: which images are set + the upload limit
   ]);
   adminState.users = results[0].data;
   adminState.choices = results[1].data;
   adminState.winners = results[2].data;
-  adminState.images = results[3].data.images;
-  adminState.maxUploadBytes = results[3].data.max_upload_bytes;
+  adminState.upcoming = results[3].data;
+  adminState.images = results[4].data.images;
+  adminState.maxUploadBytes = results[4].data.max_upload_bytes;
 }
 
 async function refreshAdmin() {
   await loadAdminData();
   showChoicesSection();
   showWinnersSection();
+  showUpcomingSection();
   showUsersSection();
   showImagesSection();
 }

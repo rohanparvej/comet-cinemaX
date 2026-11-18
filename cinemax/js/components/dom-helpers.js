@@ -28,6 +28,12 @@ function formatRuntime(minutes) {
 }
 
 
+// Full address of a movie's poster picture ("" when the movie has none).
+// The backend sends `poster_url` (a path); the page may live on another domain than the API.
+function posterSource(movie) {
+  return movie && movie.poster_url ? CINEMAX_CONFIG.apiBaseUrl + movie.poster_url : "";
+}
+
 // Password input with a Show / Hide button. Returns { wrap, input }: put `wrap` in the form.
 //   const pw = createPasswordField("my-input-class", "password", "current-password");
 //   field.appendChild(pw.wrap);   ...   pw.input.value
