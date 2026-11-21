@@ -33,7 +33,7 @@ function showWinnersSection() {
       "p",
       "admin-muted",
       hasCurrent
-        ? "Voting is closed while a winner is current. Turn it off to open the poll again."
+        ? "Only one winner can be current. Turn it off before declaring or choosing the next winner. To let people vote again while it stays, use \"Open voting\" in the Movies tab."
         : "The poll is open. Declaring a winner closes voting."
     )
   );
@@ -57,9 +57,14 @@ function showWinnersSection() {
     if (winner.is_current) {
       item.appendChild(createEl("span", "admin-tag admin-tag--current", "Current"));
     } else {
-      item.appendChild(createButton("Make current", "admin-btn admin-btn--small", function () {
+      const makeCurrent = createButton("Make current", "admin-btn admin-btn--small", function () {
         setCurrentWinner(winner);
-      }));
+      });
+      if (hasCurrent) {
+        makeCurrent.disabled = true; // only one winner at a time
+        makeCurrent.title = "Turn off the current winner first";
+      }
+      item.appendChild(makeCurrent);
     }
     list.appendChild(item);
   });

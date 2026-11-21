@@ -15,6 +15,7 @@ import {
   posterBody,
   upcomingBody,
   upcomingUpdateBody,
+  votingBody,
 } from '../utils/schemas.js';
 
 const router = Router();
@@ -57,5 +58,9 @@ router.get('/winners', admin.listWinners);
 router.post('/winners', validate({ body: declareWinnerBody }), admin.declareWinner);
 router.patch('/winners/:id/current', validate({ params: idParam }), admin.makeCurrent);
 router.delete('/winners/current', admin.clearCurrent);
+
+// "Open voting" switch: lets people vote again while the current winner stays
+router.get('/voting', admin.getVoting);
+router.put('/voting', validate({ body: votingBody }), admin.setVoting);
 
 export default router;

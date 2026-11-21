@@ -20,7 +20,8 @@ async function loadHomeData() {
 
   // The shortlist scroller shows the runner-up poll movies once a winner is current,
   // except the winner itself (the featured movie), followed by the upcoming movies.
-  const lineup = winner
+  // While voting is open again, the poll movies are candidates, not runner-ups: no shortlist then.
+  const lineup = winner && !winner.voting_open
     ? choices.filter(function (movie) {
         return !(movie.title_name === winner.title_name && movie.release_year === winner.release_year);
       })

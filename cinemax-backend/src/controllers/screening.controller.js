@@ -2,15 +2,16 @@ import { ScreeningChoice } from '../models/ScreeningChoice.js';
 import { ScreeningWinner } from '../models/ScreeningWinner.js';
 import { AppError } from '../utils/AppError.js';
 import { withPosterUrl } from '../utils/poster.js';
+import { getVotingStatus } from '../utils/votingStatus.js';
 
 const recommender = { path: 'recommended_by', select: 'username' };
 
 // Landing page: current poll entries - soft-deleted ones are hidden.
 // recommended_by.id lets the page grey out a movie for the user who recommended it.
-// Vote counts are secret until a winner is declared: number_of_votes is only
-// selected (and returned) once a current winner exists. chosen_by is never selected.
+// Vote counts are secret while voting is open: number_of_votes is only
+// selected (and returned) once voting is closed (a winner is current and the switch is off). chosen_by is never selected.
 export async function listChoices(_req, res) {
-  const closed = await ScreeningWinner.exists({ is_current: true });
+  const closed = !(await getVotingStatus()).open;
   const fields = 'title_name release_year runtime recommended_by poster.updated_at' + (closed ? ' number_of_votes' : '');
   const choices = await ScreeningChoice.find({ is_deleted: false })
     .select(fields)
@@ -20,12 +21,16 @@ export async function listChoices(_req, res) {
   res.json({ success: true, data: choices.map((choice) => withPosterUrl(choice, '/api/screenings/choices')) });
 }
 
-// Landing page: the winner whose is_current flag is on (null if none yet)
+// Landing page: the winner whose is_current flag is on (null if none yet).
+// voting_open tells the page whether the poll is open again while this winner stays current.
 export async function currentWinner(_req, res) {
-  const winner = await ScreeningWinner.findOne({ is_current: true })
-    .select('title_name release_year recommended_by runtime details')
-    .populate(recommender);
-  res.json({ success: true, data: winner });
+  const [winner, status] = await Promise.all([
+    ScreeningWinner.findOne({ is_current: true })
+      .select('title_name release_year recommended_by runtime details')
+      .populate(recommender),
+    getVotingStatus(),
+  ]);
+  res.json({ success: true, data: winner ? { ...winner.toJSON(), voting_open: status.open } : null });
 }
 
 // Logged-in user: which movie I voted for (null if not voted yet)
@@ -34,12 +39,13 @@ export async function myVote(req, res) {
   res.json({ success: true, data: choice ? { screening_choice_id: choice.id } : null });
 }
 
-// Logged-in user: vote for a movie. Once only, never for your own recommendation, and only while no winner is current.
+// Logged-in user: vote for a movie. Once only, never for your own recommendation, and only while voting is open.
 export async function vote(req, res) {
   const userId = req.user._id;
 
-  // Once a screening winner is current, the poll is closed for everyone
-  if (await ScreeningWinner.exists({ is_current: true })) {
+  // Once a screening winner is current the poll is closed for everyone,
+  // unless the admin switched "Open voting" on for a new round
+  if (!(await getVotingStatus()).open) {
     throw new AppError('Voting is closed. A screening winner has been announced.', 409);
   }
 

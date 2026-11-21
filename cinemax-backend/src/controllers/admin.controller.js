@@ -4,6 +4,7 @@ import { ScreeningWinner } from '../models/ScreeningWinner.js';
 import { User } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
 import { buildPoster, withPosterUrl } from '../utils/poster.js';
+import { getVotingStatus, setVotingSwitch } from '../utils/votingStatus.js';
 
 const CHOICE_POSTER_BASE = '/api/screenings/choices';
 
@@ -100,8 +101,18 @@ async function setCurrent(winnerId) {
   return ScreeningWinner.findByIdAndUpdate(winnerId, { is_current: true }, { new: true });
 }
 
-// Declare a poll entry as the winner (copies it into screening_winners and makes it current)
+// There can only ever be one winner: the current one must be turned off before the next one is set
+async function requireNoOtherCurrent(exceptId) {
+  const filter = exceptId ? { is_current: true, _id: { $ne: exceptId } } : { is_current: true };
+  if (await ScreeningWinner.exists(filter)) {
+    throw new AppError('There is already a current winner. Turn it off first, then set the next winner.', 409);
+  }
+}
+
+// Declare a poll entry as the winner (copies it into screening_winners and makes it current).
+// Declaring a winner also closes voting (the "Open voting" switch goes back off).
 export async function declareWinner(req, res) {
+  await requireNoOtherCurrent();
   const choice = await ScreeningChoice.findById(req.body.screening_choice_id);
   if (!choice || choice.is_deleted) throw new AppError('Poll entry not found.', 404);
 
@@ -121,6 +132,7 @@ export async function declareWinner(req, res) {
     votes_at_declaration: choice.number_of_votes,
   });
   const current = await setCurrent(winner._id);
+  await setVotingSwitch(false);
   res.status(201).json({ success: true, message: 'Winner declared and set as current.', data: current });
 }
 
@@ -129,12 +141,41 @@ export async function makeCurrent(req, res) {
   if (!(await ScreeningWinner.exists({ _id: req.params.id }))) {
     throw new AppError('Winner not found.', 404);
   }
+  await requireNoOtherCurrent(req.params.id);
   const winner = await setCurrent(req.params.id);
+  await setVotingSwitch(false);
   res.json({ success: true, message: 'Current winner updated.', data: winner });
 }
 
 // Switch the current flag off entirely (no current winner shown on the landing page)
 export async function clearCurrent(_req, res) {
   await ScreeningWinner.updateMany({ is_current: true }, { is_current: false });
+  await setVotingSwitch(false); // no stale "open" switch is left behind
   res.json({ success: true, message: 'No current winner is set now.' });
+}
+
+/* ---------- Open voting switch ---------- */
+
+// has_current_winner: a winner is on the home page. voting_open: the switch.
+// is_voting_open: what visitors actually get (open when there is no winner, or the switch is on).
+function votingJson(status) {
+  return { has_current_winner: status.hasWinner, voting_open: status.switchOn, is_voting_open: status.open };
+}
+
+export async function getVoting(_req, res) {
+  res.json({ success: true, data: votingJson(await getVotingStatus()) });
+}
+
+// Lets people vote again while the current winner stays on the home page
+export async function setVoting(req, res) {
+  if (!(await getVotingStatus()).hasWinner) {
+    throw new AppError('Voting is already open: there is no current winner.', 409);
+  }
+  await setVotingSwitch(req.body.open);
+  const status = await getVotingStatus();
+  res.json({
+    success: true,
+    message: status.open ? 'Voting is open.' : 'Voting is closed.',
+    data: votingJson(status),
+  });
 }

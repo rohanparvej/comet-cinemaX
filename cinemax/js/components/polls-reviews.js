@@ -3,7 +3,7 @@
 //   Signed out : see the movies up for a vote and recent reviews, plus a "Sign in" button.
 //   Signed in  : vote for ONE movie (once only, never your own recommendation),
 //                and add / edit your own review (half stars allowed).
-//   Once a screening winner is current the poll is closed: every movie is disabled
+//   Once a screening winner is current the poll is closed (unless the admin opens voting again): every movie is disabled
 //   and the movies move to the lineup in the "Now Playing" section.
 //
 // Data comes from the backend (loaded in js/main.js). Calls go through js/services/api.js.
@@ -13,7 +13,6 @@ const pollsState = {
   user: null,        // logged in user, or null
   winner: null,      // current winner (also reviewable)
   choices: [],       // movies up for a vote
-  images: {},        // uploaded site images (poll posters live here)
   reviews: [],       // recent reviews from the backend
   myVoteId: null,    // id of the movie I voted for (voting is once only)
   selectedPoll: "",  // movie picked in the poll, not submitted yet
@@ -31,9 +30,10 @@ function movieKey(title, year) {
   return title + "|" + year;
 }
 
-// Voting is closed as soon as a screening winner is current
+// Voting is closed while a screening winner is current, unless the admin switched
+// "Open voting" on for a new round (the backend sends winner.voting_open)
 function isVotingClosed() {
-  return Boolean(pollsState.winner);
+  return Boolean(pollsState.winner) && !pollsState.winner.voting_open;
 }
 
 function isMine(review) {
@@ -157,14 +157,12 @@ async function submitPollVote(button) {
 
 // Each poll box shows its movie's own poster (set in admin > Movies).
 // No poster (or it fails to load) -> the first letter of the title is shown instead.
-function createPollThumb(poll, index) {
+function createPollThumb(poll) {
   const thumb = createEl("div", "poll__thumb");
   const letter = createEl("span", "poll__thumb-letter", poll.title_name.charAt(0));
   thumb.appendChild(letter);
 
-  // The movie's own poster first; the "Poll poster 1/2" site images are only a backup
-  const backup = pollsState.images && pollsState.images["poll_poster_" + (index + 1)];
-  const source = posterSource(poll) || (backup ? CINEMAX_CONFIG.apiBaseUrl + backup.url : "");
+  const source = posterSource(poll);
   if (source) {
     const img = createEl("img", "poll__thumb-img");
     img.alt = poll.title_name + " poster";
@@ -225,9 +223,9 @@ function createPollChoice(poll) {
   return choice;
 }
 
-function createPollCard(poll, index) {
+function createPollCard(poll) {
   const card = createEl("article", "poll");
-  card.appendChild(createPollThumb(poll, index));
+  card.appendChild(createPollThumb(poll));
 
   const body = createEl("div", "poll__body");
   body.appendChild(createEl("h4", "poll__title", poll.title_name));
@@ -271,8 +269,8 @@ function showPolls() {
   }
 
   const grid = createEl("div", "polls__grid");
-  pollsState.choices.forEach(function (poll, index) {
-    grid.appendChild(createPollCard(poll, index));
+  pollsState.choices.forEach(function (poll) {
+    grid.appendChild(createPollCard(poll));
   });
   box.appendChild(grid);
 
@@ -527,7 +525,6 @@ async function initPollsReviews(data) {
 
   pollsState.winner = data.winner;
   pollsState.choices = data.choices;
-  pollsState.images = data.images || {};
   pollsState.reviews = data.reviews;
   if (data.error) pollsState.pollMessage = data.error;
 

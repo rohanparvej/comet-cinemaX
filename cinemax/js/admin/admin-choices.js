@@ -2,7 +2,8 @@
 //   - add a movie (recommended by = a user picked from the dropdown)
 //   - remove a movie (soft delete: it only disappears from the poll)
 //   - see who voted for each movie
-//   - declare a movie the winner
+//   - declare a movie the winner (only while no winner is current)
+//   - "Open voting" switch: lets people vote again while the current winner stays
 //   - give each movie its own poster (base64, see admin-poster.js)
 
 function recommenderName(entry) {
@@ -86,6 +87,59 @@ function createChoiceForm() {
   return form;
 }
 
+/* ---------- Open voting switch ---------- */
+
+function setVotingOpen(open) {
+  if (open) {
+    const stale = adminState.choices.filter(function (entry) { return !entry.is_deleted && entry.number_of_votes > 0; }).length;
+    const warning = stale
+      ? "\n\n" + stale + (stale === 1 ? " movie in the poll still holds" : " movies in the poll still hold") +
+        " votes from the last round. People who voted for them cannot vote again until those movies are removed from the poll."
+      : "";
+    if (!confirm("Open voting? People can vote again while the current winner stays on the home page." + warning)) {
+      return runAdminAction(refreshAdmin); // puts the switch back
+    }
+  }
+  runAdminAction(async function () {
+    await adminRequest("/api/admin/voting", { method: "PUT", body: { open: open } });
+    setAdminStatus(open ? "Voting is open." : "Voting is closed.", false);
+    await refreshAdmin();
+  });
+}
+
+function createVotingCard() {
+  const voting = adminState.voting;
+  const card = createEl("div", "admin-voting");
+
+  const text = createEl("div", "admin-voting__text");
+  text.appendChild(createEl("strong", "", "Open voting"));
+  text.appendChild(
+    createEl(
+      "span",
+      "admin-muted",
+      voting.has_current_winner
+        ? voting.voting_open
+          ? "Voting is open. People can vote while the current winner stays on the home page. Switch off to close the poll again."
+          : "Voting is closed because a winner is current. Add the next movies below, remove last round's movies (this releases their votes), then switch on."
+        : "Voting is open: there is no current winner. Declaring a winner closes it."
+    )
+  );
+  card.appendChild(text);
+
+  const label = createEl("label", "admin-switch");
+  const input = createEl("input");
+  input.type = "checkbox";
+  input.setAttribute("role", "switch");
+  input.checked = voting.is_voting_open;
+  input.disabled = !voting.has_current_winner; // with no winner voting is always open
+  input.addEventListener("change", function () { setVotingOpen(input.checked); });
+  label.appendChild(input);
+  label.appendChild(createEl("span", "admin-switch__track"));
+  label.appendChild(createEl("span", "admin-switch__label", voting.is_voting_open ? "On" : "Off"));
+  card.appendChild(label);
+  return card;
+}
+
 /* ---------- Actions ---------- */
 
 function removeChoice(entry) {
@@ -146,6 +200,8 @@ function createChoiceRow(entry, table) {
   const actions = createEl("td", "admin-table__actions");
   if (entry.is_deleted) {
     actions.appendChild(createEl("span", "admin-tag", "Removed"));
+    // A removed movie keeps its poster in the database until it is removed here
+    if (entry.poster_url) actions.appendChild(createPosterRemoveButton("choices", entry));
   } else {
     const votersRow = createEl("tr", "admin-table__voters");
     votersRow.hidden = true;
@@ -162,9 +218,14 @@ function createChoiceRow(entry, table) {
     actions.appendChild(toggle);
     actions.appendChild(createPosterReplaceButton("choices", entry));
     if (entry.poster_url) actions.appendChild(createPosterRemoveButton("choices", entry));
-    actions.appendChild(createButton("Declare winner", "admin-btn admin-btn--small admin-btn--primary", function () {
+    const declare = createButton("Declare winner", "admin-btn admin-btn--small admin-btn--primary", function () {
       declareWinner(entry);
-    }));
+    });
+    if (adminState.voting.has_current_winner) {
+      declare.disabled = true; // only one winner at a time
+      declare.title = "Turn off the current winner first (Screening winners tab)";
+    }
+    actions.appendChild(declare);
     actions.appendChild(createButton("Remove", "admin-btn admin-btn--small admin-btn--danger", function () {
       removeChoice(entry);
     }));
@@ -184,6 +245,7 @@ function showChoicesSection() {
   const box = adminParts.choices;
   box.replaceChildren();
 
+  box.appendChild(createVotingCard());
   box.appendChild(createEl("h2", "admin-card__title", "Add a movie to the poll"));
   box.appendChild(createChoiceForm());
 

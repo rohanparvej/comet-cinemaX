@@ -1,7 +1,7 @@
 // Admin page entry: decides between the login form and the dashboard.
 //
 //   Dashboard tabs (one file each):
-//     Movies            admin-choices.js : add movies to the poll, remove them, see who voted
+//     Movies            admin-choices.js : add movies to the poll, remove them, see who voted, "Open voting" switch
 //     Screening winners admin-winners.js : declare a winner, choose which winner is current
 //     Users             admin-users.js   : create user accounts, see existing users
 //     Upcoming          admin-upcoming.js: upcoming movies for the home page shortlist (each with its own poster)
@@ -14,6 +14,7 @@ const adminState = {
   choices: [],        // poll entries (with voters)
   winners: [],
   upcoming: [],       // upcoming movies (home page shortlist)
+  voting: { has_current_winner: false, voting_open: false, is_voting_open: true }, // "Open voting" switch
   images: {},         // which site images are set: { slot: { url, size } or null }
   maxUploadBytes: 1048576, // upload limit, read from the backend (MAX_IMAGE_UPLOAD_MB)
   showRemoved: false, // also list soft-deleted poll entries
@@ -65,7 +66,8 @@ async function loadAdminData() {
     adminRequest("/api/admin/votes" + (adminState.showRemoved ? "?include_deleted=true" : "")),
     adminRequest("/api/admin/winners"),
     adminRequest("/api/admin/upcoming"),
-    apiRequest("/api/site/images") // public: which images are set + the upload limit
+    apiRequest("/api/site/images"), // public: which images are set + the upload limit
+    adminRequest("/api/admin/voting")
   ]);
   adminState.users = results[0].data;
   adminState.choices = results[1].data;
@@ -73,6 +75,7 @@ async function loadAdminData() {
   adminState.upcoming = results[3].data;
   adminState.images = results[4].data.images;
   adminState.maxUploadBytes = results[4].data.max_upload_bytes;
+  adminState.voting = results[5].data;
 }
 
 async function refreshAdmin() {

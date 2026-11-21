@@ -12,18 +12,6 @@ const IMAGE_SLOTS = [
     label: "Hero background",
     hint: "Full-screen image at the very top of the home page. A wide, landscape image works best.",
     emptyText: "No image set. The built-in hero image is used."
-  },
-  {
-    key: "poll_poster_1",
-    label: "Poll poster 1",
-    hint: "Backup poster for the FIRST poll box (the movie that comes first alphabetically). Only used when that movie has no poster of its own: set posters per movie in the Movies tab.",
-    emptyText: "No poster set. The movie's first letter is shown instead."
-  },
-  {
-    key: "poll_poster_2",
-    label: "Poll poster 2",
-    hint: "Backup poster for the SECOND poll box. Only used when that movie has no poster of its own: set posters per movie in the Movies tab.",
-    emptyText: "No poster set. The movie's first letter is shown instead."
   }
 ];
 

@@ -29,6 +29,8 @@ export const movieLogBody = Joi.object({
 // A poster is a base64 data URI. Its real type and size are checked again in utils/poster.js
 const posterDataUri = Joi.string().max(env.adminJsonLimitBytes);
 
+export const votingBody = Joi.object({ open: Joi.boolean().required() });
+
 export const posterBody = Joi.object({ poster: posterDataUri.required() });
 
 export const upcomingBody = Joi.object({

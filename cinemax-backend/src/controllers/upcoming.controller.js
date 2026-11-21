@@ -33,11 +33,13 @@ export async function update(req, res) {
   res.json({ success: true, data: withPosterUrl(movie, BASE) });
 }
 
-// Admin: soft delete (the record stays, it only disappears from the home page)
+// Admin: soft delete (the record stays, it only disappears from the home page).
+// Its poster is deleted from the database too: a removed upcoming movie is never listed
+// again, so there would be no way to remove the poster later.
 export async function remove(req, res) {
   const movie = await UpcomingMovie.findOneAndUpdate(
     { _id: req.params.id, is_deleted: false },
-    { is_deleted: true },
+    { $set: { is_deleted: true }, $unset: { poster: 1 } },
     { new: true }
   ).select('title_name');
   if (!movie) throw new AppError('Movie not found or already removed.', 404);

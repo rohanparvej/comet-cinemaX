@@ -29,10 +29,11 @@ function posterHandlers(Model, basePath) {
       res.json({ success: true, message: `Poster saved for "${movie.title_name}".`, data: withPosterUrl(movie, basePath) });
     },
 
-    // Admin: remove the poster (the page falls back to a coloured placeholder)
+    // Admin: remove the poster for good: the base64 is deleted from the database, which frees the space.
+    // Works for removed (soft-deleted) movies too, so a poster never gets stuck.
     async remove(req, res) {
       const movie = await Model.findOneAndUpdate(
-        { _id: req.params.id, is_deleted: false },
+        { _id: req.params.id },
         { $unset: { poster: 1 } },
         { new: true }
       ).select('title_name');
