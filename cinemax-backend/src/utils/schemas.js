@@ -26,6 +26,45 @@ export const movieLogBody = Joi.object({
   comment: Joi.string().trim().max(500).allow(''),
 });
 
+/* ---------- Reviews: query strings ---------- */
+
+const page = Joi.number().integer().min(1).default(1);
+const searchText = Joi.string().trim().max(100).allow('');
+
+// Home page: only the newest reviews. top_k = how many (5 by default).
+export const recentQuery = Joi.object({
+  top_k: Joi.number().integer().min(1).max(50).default(5),
+});
+
+// Same filters for the forum page, whether it lists reviews or movies
+const reviewFilters = {
+  q: searchText, // movie title, review text or username
+  title: Joi.string().trim().max(200),
+  year: releaseYear,
+  min_rating: Joi.number().min(0.5).max(5),
+  max_rating: Joi.number().min(0.5).max(5),
+  days: Joi.number().integer().min(1).max(3650), // only reviews from the last N days
+  page,
+};
+
+export const browseQuery = Joi.object({
+  ...reviewFilters,
+  per_page: Joi.number().integer().min(1).max(50).default(20),
+  sort: Joi.string().valid('newest', 'oldest', 'highest', 'lowest').default('newest'),
+});
+
+export const movieSummaryQuery = Joi.object({
+  ...reviewFilters,
+  per_page: Joi.number().integer().min(1).max(50).default(12),
+  sort: Joi.string().valid('latest', 'most_reviewed', 'top_rated', 'title').default('latest'),
+});
+
+// The searchable movie box in the review form
+export const movieSearchQuery = Joi.object({
+  q: searchText,
+  limit: Joi.number().integer().min(1).max(30).default(15),
+});
+
 // A poster is a base64 data URI. Its real type and size are checked again in utils/poster.js
 const posterDataUri = Joi.string().max(env.adminJsonLimitBytes);
 

@@ -2,7 +2,8 @@
 //
 //   Signed out : see the movies up for a vote and recent reviews, plus a "Sign in" button.
 //   Signed in  : vote for ONE movie (once only, never your own recommendation),
-//                and add / edit your own review (half stars allowed).
+//                and add / edit your own review (half stars allowed). The review form comes first,
+//                then the newest 5 reviews and a link to the full reviews page (reviews.html).
 //   Once a screening winner is current the poll is closed (unless the admin opens voting again): every movie is disabled
 //   and the movies move to the lineup in the "Now Playing" section.
 //
@@ -13,11 +14,13 @@ const pollsState = {
   user: null,        // logged in user, or null
   winner: null,      // current winner (also reviewable)
   choices: [],       // movies up for a vote
-  reviews: [],       // recent reviews from the backend
+  reviews: [],       // newest reviews from the backend (top 5)
+  reviewsTotal: 0,   // how many reviews exist in all (for the "See all" link)
+  myReviews: [],     // all of MY reviews (to edit one, even when it is not in the top 5)
   myVoteId: null,    // id of the movie I voted for (voting is once only)
   selectedPoll: "",  // movie picked in the poll, not submitted yet
   pollMessage: "",   // message under the poll (errors / "Vote recorded.")
-  draft: { key: "", rating: 0, comment: "" },  // what is in the review form
+  draft: { movie: null, rating: 0, comment: "" },  // what is in the review form
   notice: ""         // one-time message shown in the review form
 };
 
@@ -44,6 +47,8 @@ function endSession() {
   userSession.clear();
   pollsState.user = null;
   pollsState.myVoteId = null;
+  pollsState.myReviews = [];
+  pollsState.draft = { movie: null, rating: 0, comment: "" };
   pollsState.selectedPoll = "";
   pollsState.notice = "";
 }
@@ -74,9 +79,20 @@ async function reloadChoices() {
   pollsState.choices = result.data;
 }
 
+// Only the newest reviews (top_k = 5). Older ones are on reviews.html
 async function reloadReviews() {
-  const result = await apiRequest("/api/movie-logs?limit=20");
+  const result = await apiRequest("/api/movie-logs?top_k=5");
   pollsState.reviews = result.data;
+  pollsState.reviewsTotal = result.total || result.data.length;
+}
+
+async function loadMyReviews() {
+  try {
+    const result = await apiRequest("/api/movie-logs/mine", { session: userSession });
+    pollsState.myReviews = result.data;
+  } catch (error) {
+    handleAuthError(error);
+  }
 }
 
 /* ---------- Sign in / out ---------- */
@@ -85,7 +101,7 @@ function signIn() {
   openAuthModal(async function (user) {
     pollsState.user = user;
     pollsState.pollMessage = "";
-    await loadMyVote();
+    await Promise.all([loadMyVote(), loadMyReviews()]);
     showPollsReviews();
   });
 }
@@ -293,32 +309,20 @@ function showPolls() {
 
 /* ---------- Reviews ---------- */
 
-// Every movie that can be reviewed: the winner, the poll movies, and movies already reviewed
-function getReviewMovies() {
-  const movies = [];
-  const seen = {};
-  function add(title, year) {
-    const key = movieKey(title, year);
-    if (seen[key]) return;
-    seen[key] = true;
-    movies.push({ key: key, title_name: title, release_year: year });
-  }
-  if (pollsState.winner) add(pollsState.winner.title_name, pollsState.winner.release_year);
-  pollsState.choices.forEach(function (poll) { add(poll.title_name, poll.release_year); });
-  pollsState.reviews.forEach(function (review) { add(review.title_name, review.release_year); });
-  return movies;
-}
+// The form comes first, then only the newest reviews (top 5 from the backend).
+// The full list lives on its own page: reviews.html
 
-function findMyReview(key) {
-  return pollsState.reviews.find(function (review) {
-    return isMine(review) && movieKey(review.title_name, review.release_year) === key;
+function findMyReview(movie) {
+  if (!movie) return null;
+  return pollsState.myReviews.find(function (review) {
+    return movieKey(review.title_name, review.release_year) === movieKey(movie.title_name, movie.release_year);
   });
 }
 
 // Loads one of your reviews into the form and moves to it
 function editMyReview(review) {
   pollsState.draft = {
-    key: movieKey(review.title_name, review.release_year),
+    movie: { title_name: review.title_name, release_year: review.release_year },
     rating: review.rating,
     comment: review.comment || ""
   };
@@ -356,9 +360,9 @@ function createReviewCard(review) {
 
 function createReviewForm() {
   const draft = pollsState.draft;
-  const movies = getReviewMovies();
-  if (!movies.some(function (movie) { return movie.key === draft.key; })) {
-    draft.key = movies.length ? movies[0].key : "";
+  // Start on the movie that is playing now: that is what most people want to review
+  if (!draft.movie && pollsState.winner) {
+    draft.movie = { title_name: pollsState.winner.title_name, release_year: pollsState.winner.release_year };
   }
 
   const form = createEl("form", "review-form");
@@ -367,18 +371,27 @@ function createReviewForm() {
   const heading = createEl("h3", "review-form__title");
   form.appendChild(heading);
 
-  // Movie
-  const movieField = createEl("label", "review-form__field");
+  const fields = createEl("div", "review-form__row");
+
+  // Movie: a searchable box (every movie that was a winner or in a poll)
+  const movieField = createEl("div", "review-form__field");
   movieField.appendChild(createEl("span", "review-form__label", "Movie"));
-  const select = createEl("select", "review-form__input");
-  movies.forEach(function (movie) {
-    const option = createEl("option", "", movie.title_name + " (" + movie.release_year + ")");
-    option.value = movie.key;
-    select.appendChild(option);
+  const search = createMovieSearch({
+    value: draft.movie,
+    onSelect: function (movie) {
+      draft.movie = movie;
+      // Switching to a movie you already reviewed loads your review so you can update it
+      const mine = findMyReview(movie);
+      draft.rating = mine ? mine.rating : 0;
+      draft.comment = mine ? mine.comment || "" : "";
+      stars.setValue(draft.rating);
+      text.value = draft.comment;
+      message.textContent = "";
+      updateLabels();
+    }
   });
-  select.value = draft.key;
-  movieField.appendChild(select);
-  form.appendChild(movieField);
+  movieField.appendChild(search.el);
+  fields.appendChild(movieField);
 
   // Rating
   const ratingField = createEl("div", "review-form__field");
@@ -389,13 +402,14 @@ function createReviewForm() {
     onChange: function (rating) { draft.rating = rating; }
   });
   ratingField.appendChild(stars);
-  form.appendChild(ratingField);
+  fields.appendChild(ratingField);
+  form.appendChild(fields);
 
   // Comment
   const textField = createEl("label", "review-form__field");
   textField.appendChild(createEl("span", "review-form__label", "Your thoughts"));
   const text = createEl("textarea", "review-form__input review-form__input--text");
-  text.rows = 4;
+  text.rows = 3;
   text.maxLength = 500;
   text.placeholder = "What stayed with you?";
   text.value = draft.comment;
@@ -416,37 +430,26 @@ function createReviewForm() {
 
   // Adds or edits depending on whether you already reviewed the selected movie
   function updateLabels() {
-    const editing = Boolean(findMyReview(draft.key));
+    const editing = Boolean(findMyReview(draft.movie));
     heading.textContent = editing ? "Edit your review" : "Add your review";
     submit.textContent = editing ? "Update review" : "Post review";
   }
   updateLabels();
 
-  select.addEventListener("change", function () {
-    draft.key = select.value;
-    const mine = findMyReview(draft.key);
-    draft.rating = mine ? mine.rating : 0;
-    draft.comment = mine ? mine.comment || "" : "";
-    stars.setValue(draft.rating);
-    text.value = draft.comment;
-    message.textContent = "";
-    updateLabels();
-  });
-
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
     const comment = draft.comment.trim();
+    const movie = draft.movie;
+    if (!movie) {
+      message.textContent = "Pick a movie from the list first.";
+      return;
+    }
     if (!draft.rating) {
       message.textContent = "Pick a star rating first.";
       return;
     }
     if (!comment) {
       message.textContent = "Write a few words about the film.";
-      return;
-    }
-    const movie = movies.find(function (item) { return item.key === draft.key; });
-    if (!movie) {
-      message.textContent = "Pick a movie first.";
       return;
     }
 
@@ -462,7 +465,7 @@ function createReviewForm() {
           comment: comment
         }
       });
-      await reloadReviews();
+      await Promise.all([reloadReviews(), loadMyReviews()]);
       pollsState.notice = "Review saved.";
       showReviews();
     } catch (error) {
@@ -491,9 +494,15 @@ function showReviews() {
   const box = pollsParts.reviews;
   box.replaceChildren();
 
-  box.appendChild(createEl("h3", "polls-reviews__subtitle", "Recent reviews"));
+  // 1. Write a review first, so nobody has to scroll past the others
+  const write = createEl("div", "reviews__write");
+  write.appendChild(pollsState.user ? createReviewForm() : createSignInPrompt());
+  box.appendChild(write);
 
-  const layout = createEl("div", "reviews__layout");
+  // 2. Only the newest reviews
+  const head = createEl("div", "reviews__head");
+  head.appendChild(createEl("h3", "polls-reviews__subtitle", "Recent reviews"));
+  box.appendChild(head);
 
   const list = createEl("div", "reviews__list");
   if (pollsState.reviews.length === 0) {
@@ -502,13 +511,15 @@ function showReviews() {
   pollsState.reviews.forEach(function (review) {
     list.appendChild(createReviewCard(review));
   });
-  layout.appendChild(list);
+  box.appendChild(list);
 
-  const side = createEl("div", "reviews__side");
-  side.appendChild(pollsState.user ? createReviewForm() : createSignInPrompt());
-  layout.appendChild(side);
-
-  box.appendChild(layout);
+  // 3. Everything else: the reviews forum page
+  const more = createEl("a", "reviews__all", pollsState.reviewsTotal > pollsState.reviews.length
+    ? "See all " + pollsState.reviewsTotal + " reviews"
+    : "Open the reviews forum");
+  more.href = "reviews.html";
+  more.appendChild(createEl("span", "reviews__all-arrow", " \u2192"));
+  box.appendChild(more);
 }
 
 /* ---------- Start ---------- */
@@ -526,6 +537,7 @@ async function initPollsReviews(data) {
   pollsState.winner = data.winner;
   pollsState.choices = data.choices;
   pollsState.reviews = data.reviews;
+  pollsState.reviewsTotal = data.reviewsTotal || data.reviews.length;
   if (data.error) pollsState.pollMessage = data.error;
 
   const saved = userSession.load();
@@ -540,6 +552,6 @@ async function initPollsReviews(data) {
   inner.appendChild(pollsParts.reviews);
   section.appendChild(inner);
 
-  if (pollsState.user) await loadMyVote();
+  if (pollsState.user) await Promise.all([loadMyVote(), loadMyReviews()]);
   showPollsReviews();
 }

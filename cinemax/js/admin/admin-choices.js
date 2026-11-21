@@ -1,6 +1,7 @@
 // Admin section: the movies people can vote on.
 //   - add a movie (recommended by = a user picked from the dropdown)
 //   - remove a movie (soft delete: it only disappears from the poll)
+//   - delete a REMOVED movie forever (erased from the database, after a warning)
 //   - see who voted for each movie
 //   - declare a movie the winner (only while no winner is current)
 //   - "Open voting" switch: lets people vote again while the current winner stays
@@ -170,6 +171,23 @@ function declareWinner(entry) {
   });
 }
 
+// Erases a removed movie (and its poster) from the database. Cannot be undone.
+function deleteChoiceForever(entry) {
+  const ok = confirm(
+    'DELETE FOREVER: "' + entry.title_name + '" (' + entry.release_year + ')\n\n' +
+    "This erases the movie and its poster from the database. It cannot be undone and it will no longer " +
+    "appear in \"Show removed\".\n\n" +
+    "Reviews already written for this movie, and a winner record made from it, are kept.\n\n" +
+    "Delete it forever?"
+  );
+  if (!ok) return;
+  runAdminAction(async function () {
+    await adminRequest("/api/admin/choices/" + entry.id + "/permanent", { method: "DELETE" });
+    setAdminStatus('"' + entry.title_name + '" was deleted forever.', false);
+    await refreshAdmin();
+  });
+}
+
 /* ---------- Table ---------- */
 
 function createVotersList(entry) {
@@ -202,6 +220,9 @@ function createChoiceRow(entry, table) {
     actions.appendChild(createEl("span", "admin-tag", "Removed"));
     // A removed movie keeps its poster in the database until it is removed here
     if (entry.poster_url) actions.appendChild(createPosterRemoveButton("choices", entry));
+    actions.appendChild(createButton("Delete forever", "admin-btn admin-btn--small admin-btn--danger", function () {
+      deleteChoiceForever(entry);
+    }));
   } else {
     const votersRow = createEl("tr", "admin-table__voters");
     votersRow.hidden = true;

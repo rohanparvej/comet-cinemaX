@@ -267,23 +267,12 @@
 
 /* ---------- Reviews ---------- */
 
-.reviews__layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-3);
+.reviews__write {
+  margin-bottom: var(--space-4);
 }
 
-@media (min-width: 900px) {
-  .reviews__layout {
-    grid-template-columns: 1.4fr 1fr;
-    align-items: start;
-  }
-
-  /* The form / sign in card follows you while you read the reviews */
-  .reviews__side {
-    position: sticky;
-    top: calc(var(--navbar-height) + var(--space-2));
-  }
+.reviews__head {
+  margin-bottom: var(--space-1);
 }
 
 .reviews__list {
@@ -361,6 +350,20 @@
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: 1.4rem;
+}
+
+/* Movie and rating side by side on wide screens */
+.review-form__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+@media (min-width: 700px) {
+  .review-form__row {
+    grid-template-columns: 1.6fr 1fr;
+    align-items: start;
+  }
 }
 
 .review-form__field {
@@ -490,4 +493,23 @@
 
 .polls-reviews__empty {
   color: var(--color-text-muted);
+}
+
+/* Link to the full reviews page, under the newest reviews */
+.reviews__all {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.25rem;
+  margin-top: var(--space-3);
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  color: var(--color-primary);
+  transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease);
+}
+
+.reviews__all:hover {
+  background: var(--color-primary);
+  color: #0f1a0c;
 }

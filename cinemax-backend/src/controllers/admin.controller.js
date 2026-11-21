@@ -66,6 +66,15 @@ export async function removeChoice(req, res) {
   res.json({ success: true, message: 'Movie removed from the poll.', data: choice });
 }
 
+// Delete forever: erases a REMOVED movie (and its poster) from the database. This cannot be undone.
+// Only removed movies qualify, so a movie in the poll can never be erased by accident.
+// Reviews written for the movie and a winner record made from it are separate records and are kept.
+export async function purgeChoice(req, res) {
+  const choice = await ScreeningChoice.findOneAndDelete({ _id: req.params.id, is_deleted: true }).select('title_name');
+  if (!choice) throw new AppError('Only a removed movie can be deleted forever. Remove it from the poll first.', 404);
+  res.json({ success: true, message: `"${choice.title_name}" was deleted forever.` });
+}
+
 /* ---------- Who voted for what ---------- */
 
 // Every poll entry with its voters (chosen_by)

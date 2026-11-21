@@ -4,7 +4,7 @@ async function loadHomeData() {
   const results = await Promise.allSettled([
     apiRequest("/api/screenings/winner/current"),
     apiRequest("/api/screenings/choices"),
-    apiRequest("/api/movie-logs?limit=20"),
+    apiRequest("/api/movie-logs?top_k=5"),
     apiRequest("/api/site/images"),
     // Upcoming movies for the shortlist scroller. Never blocks the page: no answer = empty list.
     apiRequest("/api/screenings/upcoming").catch(function () { return { data: [] }; })
@@ -33,6 +33,7 @@ async function loadHomeData() {
     lineup: lineup,
     upcoming: valueOf(results[4], []),
     reviews: valueOf(results[2], []),
+    reviewsTotal: results[2].status === "fulfilled" ? results[2].value.total : 0,
     images: valueOf(results[3], { images: {} }).images,
     error: failed ? failed.reason.message : ""
   };

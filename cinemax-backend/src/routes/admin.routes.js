@@ -36,6 +36,7 @@ router.delete('/choices/:id', validate({ params: idParam }), admin.removeChoice)
 
 // Poster of a poll movie (base64 data URI in the body; sending again replaces it)
 router.put('/choices/:id/poster', validate({ params: idParam, body: posterBody }), choicePoster.set);
+router.delete('/choices/:id/permanent', validate({ params: idParam }), admin.purgeChoice); // delete forever (removed movies only)
 router.delete('/choices/:id/poster', validate({ params: idParam }), choicePoster.remove);
 
 // Upcoming movies (home page shortlist scroller): as many as needed, each with its own poster

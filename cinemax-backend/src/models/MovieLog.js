@@ -17,6 +17,7 @@ const movieLogSchema = new mongoose.Schema(
 // One log per user per movie (re-rating updates it)
 movieLogSchema.index({ user_id_fk: 1, title_name: 1, release_year: 1 }, { unique: true });
 movieLogSchema.index({ added_date_time: -1 });
+movieLogSchema.index({ title_name: 1, release_year: 1, added_date_time: -1 }); // forum: reviews of one movie
 applyJson(movieLogSchema);
 
 export const MovieLog = mongoose.model('MovieLog', movieLogSchema);

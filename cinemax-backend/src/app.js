@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
 import screeningRoutes from './routes/screening.routes.js';
 import movieLogRoutes from './routes/movieLog.routes.js';
+import movieRoutes from './routes/movie.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import siteImageRoutes from './routes/siteImage.routes.js';
 import { errorHandler, notFound } from './middleware/error.js';
@@ -48,6 +49,7 @@ try {
 }
 app.use('/api/screenings', screeningRoutes);
 app.use('/api/movie-logs', movieLogRoutes);
+app.use('/api/movies', movieRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/site', siteImageRoutes);
 

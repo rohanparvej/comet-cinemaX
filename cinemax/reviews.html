@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviews Forum - Cinemax</title>
+  <meta name="description" content="Browse every Cinemax review: by movie or as one feed, with search, rating and date filters.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/reviews.css">
+</head>
+<body>
+  <div class="forum">
+    <header class="forum__bar">
+      <a href="index.html" class="forum__brand" aria-label="Cinemax home">CINEMAX</a>
+      <a href="index.html#polls-reviews" class="forum__back">&larr; Back to the site</a>
+    </header>
+
+    <main class="forum__main">
+      <div class="forum__intro">
+        <span class="forum__label">Reviews</span>
+        <h1 class="forum__title">Reviews Forum</h1>
+        <p class="forum__lead">Everything the audience has written, by movie or as one feed.</p>
+        <a class="forum__write" href="index.html#polls-reviews">Write a review</a>
+      </div>
+
+      <!-- Controls and results are built by js/reviews-page.js -->
+      <div id="forum-app"></div>
+    </main>
+  </div>
+
+  <!-- Same building blocks as the home page: settings, services, components, then the page script -->
+  <script src="js/config.js" defer></script>
+  <script src="js/services/api.js" defer></script>
+  <script src="js/services/session.js" defer></script>
+  <script src="js/components/wake-loader.js" defer></script>
+  <script src="js/components/dom-helpers.js" defer></script>
+  <script src="js/components/star-rating.js" defer></script>
+  <script src="js/reviews-page.js" defer></script>
+</body>
+</html>
