@@ -54,6 +54,10 @@ router.get('/votes', admin.votesByChoice);
 router.put('/images/:key', uploadImage, images.saveImage);
 router.delete('/images/:key', images.removeImage);
 
+// Site texts (e.g. hero caption). Body: { value: "..." }; DELETE goes back to the built-in text
+router.put('/texts/:key', images.saveText);
+router.delete('/texts/:key', images.removeText);
+
 // Winners
 router.get('/winners', admin.listWinners);
 router.post('/winners', validate({ body: declareWinnerBody }), admin.declareWinner);

@@ -11,7 +11,14 @@ const IMAGE_SLOTS = [
     key: "hero_background",
     label: "Hero background",
     hint: "Full-screen image at the very top of the home page. A wide, landscape image works best.",
-    emptyText: "No image set. The built-in hero image is used."
+    emptyText: "No image set. The built-in hero image is used.",
+    caption: {
+      key: "hero_caption",
+      label: "Hero caption (\"In Frame\" text)",
+      hint: "The small line under the hero tagline that describes the background image.",
+      defaultText: "In Frame: Fallen Angels (1995)",
+      maxLength: 150
+    }
   }
 ];
 
@@ -20,6 +27,61 @@ const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 function formatBytes(bytes) {
   if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(2).replace(/\.?0+$/, "") + " MB";
   return Math.round(bytes / 1024) + " KB";
+}
+
+// Text box + Save / Reset for a caption that belongs to an image slot
+function createCaptionEditor(caption) {
+  const saved = adminState.texts[caption.key];
+  const form = createEl("form", "admin-image__form admin-image__caption");
+
+  const field = createEl("label", "admin-field");
+  field.appendChild(createEl("span", "admin-field__label", caption.label));
+  const input = createEl("input", "admin-input");
+  input.type = "text";
+  input.maxLength = caption.maxLength;
+  input.value = saved || caption.defaultText;
+  input.placeholder = caption.defaultText;
+  field.appendChild(input);
+  form.appendChild(field);
+  form.appendChild(
+    createEl("p", "admin-muted", caption.hint + (saved ? "" : " Currently using the built-in text."))
+  );
+
+  const buttons = createEl("div", "admin-image__buttons");
+  const save = createEl("button", "admin-btn admin-btn--primary", "Save caption");
+  save.type = "submit";
+  buttons.appendChild(save);
+  if (saved) {
+    buttons.appendChild(createButton("Reset to default", "admin-btn admin-btn--danger", function () {
+      runAdminAction(async function () {
+        await adminRequest("/api/admin/texts/" + caption.key, { method: "DELETE" });
+        await refreshAdmin();
+        setAdminStatus(caption.label + " reset to default.", false);
+      });
+    }));
+  }
+  form.appendChild(buttons);
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const value = input.value.trim();
+    if (!value) {
+      setAdminStatus("The caption cannot be empty. Use \"Reset to default\" to go back to the built-in one.", true);
+      return;
+    }
+    save.disabled = true;
+    runAdminAction(async function () {
+      try {
+        const result = await adminRequest("/api/admin/texts/" + caption.key, { method: "PUT", body: { value: value } });
+        await refreshAdmin();
+        setAdminStatus(result.message, false);
+      } finally {
+        save.disabled = false;
+      }
+    });
+  });
+
+  return form;
 }
 
 function createImageSlot(slot) {
@@ -74,6 +136,8 @@ function createImageSlot(slot) {
   }
   form.appendChild(buttons);
   box.appendChild(form);
+
+  if (slot.caption) box.appendChild(createCaptionEditor(slot.caption));
 
   // Check the file in the browser first (the backend checks again)
   file.addEventListener("change", function () {

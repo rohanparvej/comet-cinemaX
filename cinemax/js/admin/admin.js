@@ -15,6 +15,7 @@ const adminState = {
   winners: [],
   upcoming: [],       // upcoming movies (home page shortlist)
   voting: { has_current_winner: false, voting_open: false, is_voting_open: true }, // "Open voting" switch
+  texts: {},          // editable site texts: { slot: string or null }
   images: {},         // which site images are set: { slot: { url, size } or null }
   maxUploadBytes: 1048576, // upload limit, read from the backend (MAX_IMAGE_UPLOAD_MB)
   showRemoved: false, // also list soft-deleted poll entries
@@ -75,6 +76,7 @@ async function loadAdminData() {
   adminState.upcoming = results[3].data;
   adminState.images = results[4].data.images;
   adminState.maxUploadBytes = results[4].data.max_upload_bytes;
+  adminState.texts = results[4].data.texts || {};
   adminState.voting = results[5].data;
 }
 

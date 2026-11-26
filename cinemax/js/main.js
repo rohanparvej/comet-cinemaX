@@ -35,6 +35,7 @@ async function loadHomeData() {
     reviews: valueOf(results[2], []),
     reviewsTotal: results[2].status === "fulfilled" ? results[2].value.total : 0,
     images: valueOf(results[3], { images: {} }).images,
+    texts: valueOf(results[3], { texts: {} }).texts,
     error: failed ? failed.reason.message : ""
   };
 }
@@ -43,7 +44,13 @@ initNavbar();
 
 // Hero background: the image an admin uploaded replaces the built-in one in index.html.
 // If the uploaded image fails to load, the built-in one is put back.
-function showHeroBackground(images) {
+function showHeroBackground(images, texts) {
+  // Caption describing the background ("In Frame: ..."); admin text replaces the built-in one.
+  // textContent keeps it plain text, so nothing an admin types can inject HTML.
+  const caption = document.querySelector(".hero__sub__small");
+  const captionText = texts && texts.hero_caption;
+  if (caption && captionText) caption.textContent = captionText;
+
   const hero = document.querySelector(".hero__bg");
   const uploaded = images && images.hero_background;
   if (!hero || !uploaded) return;
@@ -70,7 +77,7 @@ async function startHome() {
   } finally {
     wakeLoader.end();
   }
-  showHeroBackground(data.images);
+  showHeroBackground(data.images, data.texts);
   initNowPlaying(data);
   initPollsReviews(data);
 }
